@@ -1,9 +1,11 @@
 using UnityEngine;
+using CodeLyokoFanGame.Data;
 
 namespace CodeLyokoFanGame
 {
     public sealed class VehicleRig : MonoBehaviour
     {
+        [SerializeField] private VehicleDefinition definition;
         [SerializeField] private VehicleStyle style;
         [SerializeField] private float speedMultiplier = 1.55f;
         [SerializeField] private bool canFly = true;
@@ -14,6 +16,21 @@ namespace CodeLyokoFanGame
 
         public float SpeedMultiplier => speedMultiplier;
         public bool CanFly => canFly;
+
+        public void Configure(VehicleDefinition newDefinition)
+        {
+            if (newDefinition == null)
+            {
+                return;
+            }
+
+            definition = newDefinition;
+            style = definition.style;
+            speedMultiplier = definition.speedMultiplier;
+            canFly = definition.canFly;
+            hoverBob = definition.hoverBob;
+            hoverRate = definition.hoverRate;
+        }
 
         public void Configure(VehicleStyle newStyle)
         {

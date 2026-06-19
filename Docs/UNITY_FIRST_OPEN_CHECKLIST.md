@@ -14,14 +14,16 @@ Use this on the PC that has Unity installed.
 3. Let Unity finish importing and compiling.
 4. Open the Console window.
 5. Run `Tools > Code Lyoko Fan Game > Create Prototype Data Assets`.
-6. Run `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene`.
-7. Save the generated scene if Unity asks.
-8. Press Play.
+6. Run `Tools > Code Lyoko Fan Game > Create Full Roster Placeholder Prefabs`.
+7. Run `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene`.
+8. Save the generated scene if Unity asks.
+9. Press Play.
 
 ## What To Check
 
 - No red Console errors after import.
 - `Assets/Game/Data/RosterDatabase.asset` exists after creating prototype data.
+- `Assets/Game/Generated/FullRosterPlaceholders` exists after creating roster placeholders.
 - `Assets/Levels/ForestSectorVerticalSlice.unity` exists after building the scene.
 - Play Mode starts with Odd active.
 - `1`, `2`, `3` swaps characters.

@@ -1,4 +1,5 @@
 using UnityEngine;
+using CodeLyokoFanGame.Data;
 
 namespace CodeLyokoFanGame
 {
@@ -17,6 +18,20 @@ namespace CodeLyokoFanGame
         private LockOnSystem lockOn;
         private float basicTimer;
         private float specialTimer;
+
+        public void ApplyDefinition(CharacterDefinition definition)
+        {
+            if (definition == null)
+            {
+                return;
+            }
+
+            attackStyle = definition.attackStyle;
+            basicDamage = definition.basicDamage;
+            specialDamage = definition.specialDamage;
+            basicCooldown = definition.basicCooldown;
+            specialCooldown = definition.specialCooldown;
+        }
 
         public void Configure(AttackStyle style, Projectile projectile, LockOnSystem targeter)
         {
@@ -73,6 +88,12 @@ namespace CodeLyokoFanGame
                     break;
                 case AttackStyle.Telekinetic:
                     DoMelee(specialDamage, meleeRadius * 2.2f, 0.8f);
+                    break;
+                case AttackStyle.Support:
+                    DoMelee(specialDamage * 0.65f, meleeRadius * 1.8f, 0.2f);
+                    break;
+                case AttackStyle.Operator:
+                    FireProjectile(specialDamage * 0.5f, 0f);
                     break;
                 default:
                     FireProjectile(specialDamage, -8f);

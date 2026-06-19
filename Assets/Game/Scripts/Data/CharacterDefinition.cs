@@ -13,16 +13,26 @@ namespace CodeLyokoFanGame.Data
         [Header("Gameplay")]
         public AttackStyle attackStyle;
         public VehicleStyle vehicleStyle;
+        public bool playable = true;
+        public bool companion;
+        public bool operatorOnly;
         public float maxHealth = 120f;
         public float walkSpeed = 7f;
         public float sprintSpeed = 10f;
+        public float jumpForce = 8f;
+        public float dodgeSpeed = 18f;
         public float basicDamage = 20f;
         public float specialDamage = 35f;
+        public float basicCooldown = 0.28f;
+        public float specialCooldown = 1.6f;
 
         [Header("Production")]
         public bool playableInVerticalSlice;
+        public GameObject prototypePrefab;
+        public GameObject finalModelPrefab;
         public string modelStatus = "Placeholder";
         public string animationStatus = "Not started";
         public string audioStatus = "Not started";
+        public string sourceAssetId;
     }
 }

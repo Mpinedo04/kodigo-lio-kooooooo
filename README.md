@@ -8,8 +8,9 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 2. Espera a que Unity importe URP y compile scripts.
 3. En el menu superior usa `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene`.
 4. Usa tambien `Tools > Code Lyoko Fan Game > Create Prototype Data Assets` para generar fichas editables de personajes, enemigos y vehiculos.
-5. Abre `Assets/Levels/ForestSectorVerticalSlice.unity` si no se abre solo.
-6. Pulsa Play.
+5. Usa `Tools > Code Lyoko Fan Game > Create Full Roster Placeholder Prefabs` para crear prefabs 3D temporales de todos los personajes/enemigos/vehiculos principales.
+6. Abre `Assets/Levels/ForestSectorVerticalSlice.unity` si no se abre solo.
+7. Pulsa Play.
 
 ## Controles
 
@@ -34,6 +35,7 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 - Documento de pipeline/licencias de modelos fan en `Assets/ArtSources/ASSET_SOURCES.md`.
 - Catalogo de personajes/enemigos/vehiculos en `Assets/ArtSources/CANON_CATALOG.md`.
 - Datos editables generables en `Assets/Game/Data`.
+- Prefabs placeholder generables para el roster principal completo.
 - Documentos de diseno y modelado en `Docs/`.
 
 ## Siguiente paso sin perderse

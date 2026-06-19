@@ -50,6 +50,8 @@ namespace CodeLyokoFanGame.EditorTools
             LockOnSystem lockOn = systems.AddComponent<LockOnSystem>();
             CharacterSwitcher switcher = systems.AddComponent<CharacterSwitcher>();
             MissionManager mission = systems.AddComponent<MissionManager>();
+            MissionDirector missionDirector = systems.AddComponent<MissionDirector>();
+            GameHud hud = systems.AddComponent<GameHud>();
             DigitalSeaHazard sea = systems.AddComponent<DigitalSeaHazard>();
 
             Camera camera = CreateCamera(lockOn);
@@ -63,6 +65,13 @@ namespace CodeLyokoFanGame.EditorTools
             Transform respawn = new GameObject("RespawnPoint").transform;
             respawn.position = new Vector3(0f, 4f, -12f);
             SetPrivate(sea, "respawnPoint", respawn);
+            CreateCheckpoint("BridgeCheckpoint", new Vector3(0f, 1f, 8f));
+            CreateCheckpoint("TowerCheckpoint", new Vector3(0f, 1f, 38f));
+
+            Transform bridgeMarker = new GameObject("BridgeMissionMarker").transform;
+            bridgeMarker.position = new Vector3(0f, 1f, 8f);
+            Transform towerMarker = new GameObject("TowerMissionMarker").transform;
+            towerMarker.position = new Vector3(0f, 1f, 45f);
 
             PlayerController odd = CreatePlayer("Odd", LyokoCharacter.Odd, AttackStyle.Ranged, VehicleStyle.Overboard, violet, overboard, playerProjectile, switcher, lockOn, new Vector3(0f, 2f, -12f));
             PlayerController ulrich = CreatePlayer("Ulrich", LyokoCharacter.Ulrich, AttackStyle.Melee, VehicleStyle.Overbike, green, overbike, playerProjectile, switcher, lockOn, new Vector3(0f, 2f, -12f));
@@ -76,6 +85,11 @@ namespace CodeLyokoFanGame.EditorTools
             TowerObjective tower = CreateTower(cyan, red, aelita);
             SetPrivate(mission, "tower", tower);
             SetPrivate(mission, "switcher", switcher);
+            missionDirector.SetTower(tower);
+            missionDirector.SetAelita(aelita);
+            SetPrivate(missionDirector, "bridgeMarker", bridgeMarker);
+            SetPrivate(missionDirector, "towerMarker", towerMarker);
+            hud.Configure(switcher, missionDirector, tower, aelita);
 
             CreateEnemy("Kankrelat_A", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(7f, 2f, 3f));
             CreateEnemy("Kankrelat_B", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(-8f, 2f, 7f));
@@ -83,6 +97,7 @@ namespace CodeLyokoFanGame.EditorTools
             CreateEnemy("Krab_A", EnemyKind.Krab, dark, red, enemyProjectile, new Vector3(-14f, 2f, 20f));
             CreateEnemy("Hornet_A", EnemyKind.Hornet, orange, red, enemyProjectile, new Vector3(8f, 5f, 27f));
             CreateEnemy("Megatank_Boss", EnemyKind.Megatank, dark, red, enemyProjectile, new Vector3(0f, 2.2f, 41f));
+            CreateWaveSpawner("TowerReinforcementWave", enemyProjectile, new Vector3(0f, 1f, 35f));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
@@ -250,6 +265,30 @@ namespace CodeLyokoFanGame.EditorTools
             platform.transform.localScale = scale;
             platform.GetComponent<Renderer>().sharedMaterial = material;
             return platform;
+        }
+
+        private static void CreateCheckpoint(string name, Vector3 position)
+        {
+            GameObject checkpoint = new GameObject(name);
+            checkpoint.transform.position = position;
+            checkpoint.AddComponent<Checkpoint>();
+
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = "CheckpointMarker";
+            marker.transform.SetParent(checkpoint.transform);
+            marker.transform.localPosition = Vector3.zero;
+            marker.transform.localScale = new Vector3(1.8f, 0.04f, 1.8f);
+            Object.DestroyImmediate(marker.GetComponent<Collider>());
+        }
+
+        private static void CreateWaveSpawner(string name, Projectile enemyProjectile, Vector3 position)
+        {
+            GameObject spawnerObject = new GameObject(name);
+            spawnerObject.transform.position = position;
+            WaveSpawner spawner = spawnerObject.AddComponent<WaveSpawner>();
+            SetPrivate(spawner, "enemyProjectilePrefab", enemyProjectile);
+            spawner.AddWave(EnemyKind.Kankrelat, 3, 4f);
+            spawner.AddWave(EnemyKind.Hornet, 2, 6f);
         }
 
         private static PlayerController CreatePlayer(string name, LyokoCharacter id, AttackStyle style, VehicleStyle vehicleStyle, Material material, VehicleRig vehicle, Projectile projectile, CharacterSwitcher switcher, LockOnSystem lockOn, Vector3 position)

@@ -24,7 +24,8 @@ namespace CodeLyokoFanGame
                     controller.enabled = false;
                 }
 
-                players[i].transform.position = respawnPoint != null ? respawnPoint.position : Vector3.up * 3f;
+                Vector3 fallback = respawnPoint != null ? respawnPoint.position : Vector3.up * 3f;
+                players[i].transform.position = CheckpointRegistry.GetRespawnPosition(fallback);
 
                 if (controller != null)
                 {

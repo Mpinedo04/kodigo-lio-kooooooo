@@ -1,4 +1,5 @@
 using UnityEngine;
+using CodeLyokoFanGame.Data;
 
 namespace CodeLyokoFanGame
 {
@@ -7,6 +8,7 @@ namespace CodeLyokoFanGame
     public sealed class PlayerController : MonoBehaviour
     {
         [Header("Identity")]
+        [SerializeField] private CharacterDefinition definition;
         [SerializeField] private LyokoCharacter character = LyokoCharacter.Odd;
         [SerializeField] private VehicleStyle vehicleStyle = VehicleStyle.Overboard;
 
@@ -36,11 +38,40 @@ namespace CodeLyokoFanGame
         public LyokoCharacter Character => character;
         public bool IsMounted => mounted;
 
+        public void ApplyDefinition(CharacterDefinition newDefinition)
+        {
+            if (newDefinition == null)
+            {
+                return;
+            }
+
+            definition = newDefinition;
+            character = definition.character;
+            vehicleStyle = definition.vehicleStyle;
+            walkSpeed = definition.walkSpeed;
+            sprintSpeed = definition.sprintSpeed;
+            jumpForce = definition.jumpForce;
+            dodgeSpeed = definition.dodgeSpeed;
+
+            Health health = GetComponent<Health>();
+            if (health != null)
+            {
+                health.SetMaxHealth(definition.maxHealth);
+            }
+
+            PlayerCombat playerCombat = GetComponent<PlayerCombat>();
+            if (playerCombat != null)
+            {
+                playerCombat.ApplyDefinition(definition);
+            }
+        }
+
         public void Initialize(Transform cameraTarget, LockOnSystem targeter)
         {
             cameraTransform = cameraTarget;
             lockOn = targeter;
             combat = GetComponent<PlayerCombat>();
+            ApplyDefinition(definition);
         }
 
         public void SetControlActive(bool active)
@@ -58,6 +89,7 @@ namespace CodeLyokoFanGame
         {
             controller = GetComponent<CharacterController>();
             combat = GetComponent<PlayerCombat>();
+            ApplyDefinition(definition);
 
             if (vehicleSocket == null)
             {

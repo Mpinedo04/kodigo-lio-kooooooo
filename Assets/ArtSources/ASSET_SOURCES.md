@@ -21,6 +21,8 @@ Record every downloaded asset here before import:
 | Yumi 3D Model | ozberkozen | https://sketchfab.com/3d-models/code-lyoko-yumi-3d-model-810978d77b8c435e9b7fd4a7f3196075 | CC Attribution listed on Sketchfab at research time | No | High poly; fan/tessen sockets needed. |
 | Blok | lolo_ivens | https://sketchfab.com/3d-models/blok-0c54c5947e6145f1a3bfccd4ba9358a8 | CC Attribution listed on Sketchfab at research time | No | Better monster prototype candidate. |
 
+For the broader import queue, use `FAN_ASSET_IMPORT_MANIFEST.md`.
+
 ## Blender Import Checklist
 
 1. Import `.fbx` or `.glb`.
