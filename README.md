@@ -36,6 +36,10 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 - Datos editables generables en `Assets/Game/Data`.
 - Documentos de diseno y modelado en `Docs/`.
 
+## Siguiente paso sin perderse
+
+Cuando abras el proyecto en el PC con Unity, sigue `Docs/UNITY_FIRST_OPEN_CHECKLIST.md`. Si aparece un error rojo en consola, copia el primero entero; normalmente arreglar el primero limpia varios de golpe.
+
 ## Nota legal
 
 Esto esta preparado como fan project local/no comercial. No publiques ni monetices materiales fieles a Code Lyoko ni modelos de fans sin permiso de los titulares y autores correspondientes.
