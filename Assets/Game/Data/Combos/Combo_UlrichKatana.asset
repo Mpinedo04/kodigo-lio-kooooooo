@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a665b399b4e63f540b014d2e89e65328, type: 3}
+  m_Name: Combo_UlrichKatana
+  m_EditorClassIdentifier: 
+  steps:
+  - stepName: Tajo 1
+    damageMultiplier: 1
+    radiusMultiplier: 1
+    forwardOffset: 0
+    duration: 0.3
+    chainWindowStart: 0.12
+    chainWindowEnd: 0.55
+    knockback: 1.5
+    heavy: 0
+  - stepName: Tajo 2
+    damageMultiplier: 1.1
+    radiusMultiplier: 1
+    forwardOffset: 0.2
+    duration: 0.3
+    chainWindowStart: 0.12
+    chainWindowEnd: 0.55
+    knockback: 2
+    heavy: 0
+  - stepName: Remate
+    damageMultiplier: 1.7
+    radiusMultiplier: 1.25
+    forwardOffset: 0.4
+    duration: 0.45
+    chainWindowStart: 0.25
+    chainWindowEnd: 0.7
+    knockback: 7
+    heavy: 1

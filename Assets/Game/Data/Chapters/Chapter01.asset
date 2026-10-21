@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f2685d4f030bf4bac96967198989ae, type: 3}
+  m_Name: Chapter01
+  m_EditorClassIdentifier: 
+  chapterNumber: 1
+  title: Materializar a Aelita
+  seasonLabel: Temporada 1
+  synopsis: X.A.N.A. activa torres mientras Jeremie trabaja para traer a Aelita al
+    mundo real; al final descubren el virus que la ata al superordenador.
+  missions:
+  - {fileID: 11400000, guid: 5633792d572843b41b8e38d5b1c4fad4, type: 2}
+  unlockedCharacters: 03000000
+  unlockedSectors:
+  - {fileID: 11400000, guid: 495c3132a8270ba4d86f3de13a93f63c, type: 2}
+  - {fileID: 11400000, guid: 25b1dd4960d383f47894b87f4df0429d, type: 2}
+  - {fileID: 11400000, guid: c6ba3c33f110aee46a0f552e9007de23, type: 2}
+  unlockedAbilities:
+  - {fileID: 11400000, guid: 42aca2e315302224482c837bbd4635a2, type: 2}
+  - {fileID: 11400000, guid: 4b2dca49013335044bee4c0770116745, type: 2}
+  - {fileID: 11400000, guid: 05c23c5f36c522d4c9185b6677850905, type: 2}
+  - {fileID: 11400000, guid: 9b1231e1971fbf14884d49a005298c8f, type: 2}

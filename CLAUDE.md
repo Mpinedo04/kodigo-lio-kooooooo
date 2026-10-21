@@ -42,25 +42,42 @@ Los documentos están divididos para no gastar contexto. Orden de lectura:
 
 ## Código actual (para no tener que abrir cada archivo)
 
-Todo está en el namespace `CodeLyokoFanGame` (`.Data` para las definiciones).
+Todo está en el namespace `CodeLyokoFanGame` (`.Data` para las definiciones, `.EditorTools` para el editor). Hay tres ensamblados: `CodeLyokoFanGame.Runtime` (`Assets/Game/Scripts/`), `CodeLyokoFanGame.Editor` (`Assets/Game/Editor/`) y `CodeLyokoFanGame.Tests.EditMode` (`Assets/Tests/EditMode/`).
 
 | Archivo (`Assets/Game/Scripts/`) | Qué hace |
 | --- | --- |
-| `PlayerController.cs` | Movimiento, salto, esquiva y montar vehículo del guerrero activo |
-| `PlayerCombat.cs` | Ataque básico y especial (cuerpo a cuerpo o proyectil) según `AttackStyle` |
-| `CharacterSwitcher.cs` | Cambio entre Odd/Ulrich/Yumi con `1`/`2`/`3` |
+| `Input/InputReader.cs` | **Única puerta a los controles.** Propiedades como `Move`, `JumpPressed`, `InteractHeld`; mapas en `Assets/Game/Input/LyokoControls.inputactions` |
+| `Core/GameManager.cs` | Estado global (capítulo, misión, Nivel de X.A.N.A., desbloqueos) y `GameManager.RaiseEvent(GameEventId)` |
+| `Core/SceneLoader.cs`, `Core/BootLoader.cs` | Carga aditiva de niveles sobre `Boot`; `BootLoader` añade `Boot` si das a Play desde un nivel |
+| `Core/PrefabPool.cs`, `Core/PooledObject.cs` | Reciclado de proyectiles y efectos (`PrefabPool.Spawn` / `Despawn`) |
+| `Events/GameEvent*.cs` | Canales de eventos (ScriptableObject) y `GameEventListener` para responder desde el Inspector |
+| `Mission/MissionRunner.cs`, `Mission/MissionMarker.cs` | Ejecuta una `MissionDefinition` paso a paso; marcadores con id para pasos “llega a X” |
+| `DebugTools/DebugMenu.cs` | Menú `F1`: invencible, matar enemigos, saltar paso, crear monstruos, ver PV |
+| `PlayerController.cs` | Movimiento del guerrero activo: aceleración, salto variable con coyote/buffer, esquiva con invulnerabilidad, parada en bordes, plataformas móviles, rasgos (doble salto, trepar, salto largo) y vehículo. Valores en `Data/MovementProfile` |
+| `Player/JumpAssist.cs`, `Player/MovementMath.cs` | Lógica pura del salto y la aceleración (con tests) |
+| `Camera/CameraRig.cs` | Cámaras Cinemachine: FreeLook a pie y en vehículo, cámara de fijado, FOV al correr y sacudida (`CameraRig.Shake`) |
+| `Core/GameSettings.cs` | Opciones guardadas (sensibilidad, invertir Y) |
+| `Level/MovingPlatform.cs` | Plataforma que va y vuelve y arrastra a quien está encima |
+| `PlayerCombat.cs` | Ataque básico (combos cuerpo a cuerpo o disparo), cargado (mantener) y especial; ayuda de puntería. Valores en `Data/CombatProfile` y `Data/ComboDefinition` |
+| `Combat/DamageInfo.cs`, `Combat/HitResolver.cs`, `Combat/Hitbox.cs`, `Combat/Hurtbox.cs` | **Todo daño pasa por aquí**: `DamageInfo` describe el golpe; `HitResolver` lo aplica una vez por objetivo, respeta equipos (`Team`) y prefiere el ojo expuesto |
+| `Combat/PlayerGuard.cs`, `Combat/ParryWindow.cs`, `Combat/ComboTracker.cs`, `Combat/SpecialMeter.cs`, `Combat/HitStop.cs` | Desvío, combos, energía especial y congelado de golpe |
+| `Combat/GameLayers.cs`, `Combat/TargetingMath.cs` | Nombres de capas de físicas y matemáticas de fijado/puntería (con tests) |
+| `Combat/DamageFlicker.cs`, `Combat/DamageNumbers.cs`, `Combat/DevirtualizeEffect.cs` | Parpadeo tras golpe, números de daño y efecto provisional de devirtualización |
+| `CharacterSwitcher.cs` | Cambio de guerrero (1–4, cruceta) y paso al siguiente al devirtualizarse |
 | `AelitaCompanion.cs` | IA de Aelita: seguir al jugador e ir a la torre |
-| `EnemyAI.cs` | IA de todos los monstruos en un solo script (~520 líneas; F06 lo divide en estados) |
-| `Health.cs`, `WeakPoint.cs`, `Projectile.cs` | Vida y devirtualización, ojo de X.A.N.A. (multiplica el daño) y proyectiles |
-| `LockOnSystem.cs`, `ThirdPersonCamera.cs` | Fijar objetivo y cámara |
+| `EnemyAI.cs`, `EnemyFactory.cs` | IA de todos los monstruos en un solo script (F06 lo divide en estados) y creación de monstruos provisionales |
+| `Health.cs`, `WeakPoint.cs`, `Projectile.cs` | Vida (equipo, invulnerabilidad, `Kill`, `AnyDamaged`), ojo de X.A.N.A. (×2,5 o muerte instantánea) y proyectiles (gravedad, perforación, chocan con `Environment`) |
+| `LockOnSystem.cs` | Fijar objetivo (la cámara lo lee desde `CameraRig`) |
 | `VehicleRig.cs` | Vehículos (Overboard/Overbike/Overwing) |
-| `MissionDirector.cs`, `MissionManager.cs`, `TowerObjective.cs`, `WaveSpawner.cs`, `Checkpoint.cs` | Fases de la misión, torre, oleadas y puntos de control |
+| `TowerObjective.cs`, `WaveSpawner.cs`, `Checkpoint.cs` | Torre, oleadas y puntos de control |
 | `DigitalSeaHazard.cs` | Caer al Mar Digital = devirtualización |
-| `GameHud.cs` | HUD provisional |
-| `GameEnums.cs` | Enums: personajes, estilos de ataque, vehículos, tipos y comportamientos de enemigos, fases de misión |
-| `Data/*Definition.cs`, `Data/RosterDatabase.cs` | ScriptableObjects con los valores de personajes, enemigos y vehículos |
+| `GameHud.cs` | HUD provisional (IMGUI) |
+| `GameEnums.cs` | Todos los enums (personajes, enemigos, fases y condiciones de misión, habilidades, sectores, eventos) |
+| `Data/*Definition.cs`, `Data/RosterDatabase.cs` | ScriptableObjects: personajes, enemigos, vehículos, habilidades, sectores, misiones y capítulos |
 
-Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **Tools > Code Lyoko Fan Game**: `Setup URP Pipeline` (crea y asigna el asset de URP en `Assets/Settings/`), `Create Prototype Data Assets`, `Create Full Roster Placeholder Prefabs` y `Build Vertical Slice Scene`. La escena (`Assets/Levels/ForestSectorVerticalSlice.unity`), los datos (`Assets/Game/Data/`), los prefabs (`Assets/Game/Generated/`) y la configuración de URP (`Assets/Settings/`) ya están generados y guardados en git. Si cambias un generador, vuelve a ejecutarlo y haz commit de lo que genere.
+**Generadores** (`Assets/Game/Editor/`, menú **Tools > Code Lyoko Fan Game**): usa **`Rebuild Everything`** (`ProjectRebuild.RebuildEverything`), que ejecuta en orden URP, assets centrales (controles y eventos), datos, prefabs, escena `Boot`, escenas de pruebas `Assets/Scenes/Test/MovementGym.unity` y `CombatArena.unity`, y escena del Bosque. Antes ejecuta `PhysicsLayersSetup` (capas y colisiones). El orden de *Build Settings* lo decide `ProjectScenes` (`Boot` siempre primero). Todo lo generado está en git: si cambias un generador, vuelve a ejecutarlo y haz commit del resultado.
+
+**Tests:** `Unity.exe -batchmode -projectPath "<repo>" -runTests -testPlatform EditMode -testResults <xml> -logFile <log>` (sin `-quit`). Añade tests en `Assets/Tests/EditMode/` para la lógica nueva que se pueda probar sin jugar.
 
 ## Unity: reglas para no romper el proyecto
 
@@ -72,7 +89,9 @@ Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **T
   - Lo que no puedes hacer es **jugar**: al terminar, explica qué tiene que probar el usuario con teclado y ratón y qué debería ver.
   - Si te pega errores de la consola, arregla siempre **el primero**, porque suele causar los demás.
 - **Versión 2022.3.** No uses API de Unity 6 / 2023+: nada de `Rigidbody.linearVelocity` (usa `velocity`) ni `Awaitable`. Si dudas de si una API existe en 2022.3, usa la alternativa clásica.
-- **Entrada:** hasta que se termine la F02, el proyecto usa el sistema antiguo (`Input.GetKey`, `Input.GetAxis`). Tras la F02 se usa el Input System con `InputReader`, y entonces no hay que volver a usar `Input.*`.
+- **Entrada:** lee siempre los controles a través de `InputReader`; **nunca uses `Input.*`**. Para una acción nueva: añádela al JSON de `LyokoControls.inputactions` (con un `id` UUID nuevo para la acción y para cada binding, con teclado y mando) y expón una propiedad en `InputReader`. No regeneres el archivo entero: los ids existentes deben mantenerse.
+- **Eventos:** para avisar de algo global usa `GameManager.RaiseEvent(GameEventId.X)`; no hace falta que exista `Boot` (en tests no hace nada).
+- **Daño:** nunca restes vida a mano. Crea un `DamageInfo` (con `source`, `sourceTeam`, `type` y `direction`) y pásalo a `HitResolver` (o a `Health.TakeDamage`). Las capas de físicas las crea `PhysicsLayersSetup`; el escenario va en `Environment`, los guerreros en `Player`, los monstruos en `Enemy` y los disparos en `PlayerAttack`/`EnemyAttack`.
 - **Archivos `.meta`:** cada asset tiene un `.meta` con su GUID. No los borres ni los inventes. Si mueves o renombras un asset, mueve también su `.meta` (o mejor, pide al usuario que lo haga desde el Editor). Unity crea los `.meta` de los scripts nuevos al abrir el proyecto; hay que hacerles commit.
 - **No edites a mano** archivos `.unity`, `.prefab` ni `.asset` (son YAML con referencias por GUID y se rompen fácilmente). Para crear o cambiar escenas y prefabs, amplía los generadores de `Assets/Game/Editor/` o da al usuario los pasos en el Editor.
 - **Una clase `MonoBehaviour` o `ScriptableObject` por archivo**, y el archivo con el mismo nombre que la clase.

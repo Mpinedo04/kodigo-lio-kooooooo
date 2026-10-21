@@ -13,12 +13,8 @@ Use this on the PC that has Unity installed.
 2. Add this folder as an existing project.
 3. Let Unity finish importing and compiling.
 4. Open the Console window.
-5. Run `Tools > Code Lyoko Fan Game > Setup URP Pipeline` (without it every material renders pink).
-6. Run `Tools > Code Lyoko Fan Game > Create Prototype Data Assets`.
-7. Run `Tools > Code Lyoko Fan Game > Create Full Roster Placeholder Prefabs`.
-8. Run `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene`.
-9. Save the generated scene if Unity asks.
-10. Press Play.
+5. Generated content is already in git. Only if a generator changed, run `Tools > Code Lyoko Fan Game > Rebuild Everything`.
+6. Open `Assets/Levels/ForestSectorVerticalSlice.unity` and press Play (`Boot` loads automatically).
 
 ## What To Check
 
@@ -26,16 +22,17 @@ Use this on the PC that has Unity installed.
 - `Assets/Settings/URP_Pipeline.asset` exists and nothing renders pink.
 - `Assets/Game/Data/RosterDatabase.asset` exists after creating prototype data.
 - `Assets/Game/Generated/FullRosterPlaceholders` exists after creating roster placeholders.
-- `Assets/Levels/ForestSectorVerticalSlice.unity` exists after building the scene.
+- `Assets/Levels/ForestSectorVerticalSlice.unity` and `Assets/Scenes/Boot.unity` exist, with `Boot` first in Build Settings.
 - Play Mode starts with Odd active.
-- `1`, `2`, `3` swaps characters.
+- `1`, `2`, `3` (or D-pad left/right on a gamepad) swaps characters.
 - `V` mounts the character vehicle.
 - `Mouse 0` and `Mouse 1` attack.
 - Enemies take damage and disappear when defeated.
 - Aelita follows and the tower progress changes when holding `E` nearby.
 - The HUD shows remaining enemies while a phase needs them cleared.
 - When the active warrior reaches 0 HP, control passes to the next one still alive.
-- When all three are devirtualized, the HUD says so and `R` restarts the mission.
+- When all three are devirtualized, the HUD says so and `R` (gamepad Y) restarts the mission.
+- `F1` opens the debug menu (god mode, kill enemies, jump to a mission step, spawn monsters).
 
 ## If There Are Errors
 

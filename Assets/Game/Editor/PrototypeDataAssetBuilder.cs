@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using CodeLyokoFanGame.Data;
 using UnityEditor;
@@ -66,6 +67,84 @@ namespace CodeLyokoFanGame.EditorTools
             VehicleDefinition transportOrb = Vehicle("TransportOrb", VehicleStyle.TransportOrb, LyokoCharacter.Aelita, 1.2f, true, true, false, "Orb used for team/sector transport.");
             VehicleDefinition blackMantaVehicle = Vehicle("BlackMantaVehicle", VehicleStyle.BlackManta, LyokoCharacter.XanaWilliam, 1.75f, true, true, false, "X.A.N.A. William's dark flying mount.");
 
+            // Movement traits (Biblia 5): Odd climbs walls and double-jumps, Yumi long-jumps, Aelita glides later.
+            SetTraits(odd, true, true, false, false);
+            SetTraits(ulrich, false, false, false, false);
+            SetTraits(yumi, false, false, true, false);
+            SetTraits(aelita, false, false, false, true);
+            SetTraits(william, false, false, false, false);
+            EnsureMovementProfile();
+            EnsureCombatProfile();
+
+            // Melee chains (F04): Ulrich's katana and William's greatsword.
+            ulrich.meleeCombo = EnsureCombo("Combo_UlrichKatana",
+                ComboHit("Tajo 1", 1f, 1f, 0f, 0.3f, 0.12f, 0.55f, 1.5f, false),
+                ComboHit("Tajo 2", 1.1f, 1f, 0.2f, 0.3f, 0.12f, 0.55f, 2f, false),
+                ComboHit("Remate", 1.7f, 1.25f, 0.4f, 0.45f, 0.25f, 0.7f, 7f, true));
+            EditorUtility.SetDirty(ulrich);
+            william.meleeCombo = EnsureCombo("Combo_WilliamSword",
+                ComboHit("Mandoble", 1.3f, 1.2f, 0.2f, 0.5f, 0.25f, 0.8f, 4f, false),
+                ComboHit("Golpe de titan", 2f, 1.4f, 0.4f, 0.65f, 0.35f, 0.9f, 9f, true));
+            EditorUtility.SetDirty(william);
+
+            // Eye of X.A.N.A. (F04): small monsters die from one eye hit; heavy ones barely move when hit.
+            SetWeakPointRules(kankrelat, true, 1f);
+            SetWeakPointRules(hornet, true, 1f);
+            SetWeakPointRules(blok, false, 0.5f);
+            SetWeakPointRules(krab, false, 0.5f);
+            SetWeakPointRules(megatank, false, 0f);
+            SetWeakPointRules(tarantula, false, 0.5f);
+            SetWeakPointRules(guardian, false, 0f);
+            SetWeakPointRules(kolossus, false, 0f);
+
+            // Abilities (Biblia del juego, seccion 5). Behaviour arrives in F05; this is the tunable data.
+            AbilityDefinition oddShield = Ability("odd_shield", "Escudo", LyokoCharacter.Odd, AbilitySlot.Ability1, AbilityKind.Shield, 8f, AbilityResource.None, 0f, 4f, 2, true, "Escudo de energia violeta en el brazo. Bloquea laseres frontales y se rompe si recibe demasiado.");
+            AbilityDefinition oddFutureFlash = Ability("odd_future_flash", "Vision del futuro", LyokoCharacter.Odd, AbilitySlot.Ability2, AbilityKind.Precognition, 20f, AbilityResource.None, 0f, 3f, 1, true, "Camara lenta y trayectorias de los disparos enemigos marcadas. Solo en el Capitulo 1 y en modo libre.");
+            AbilityDefinition oddClaws = Ability("odd_cat_claws", "Garras felinas", LyokoCharacter.Odd, AbilitySlot.Passive, AbilityKind.Movement, 0f, AbilityResource.None, 0f, 0f, 0, true, "Trepa paredes y hace doble salto.");
+            AbilityDefinition oddFelineRain = Ability("odd_feline_rain", "Lluvia felina", LyokoCharacter.Odd, AbilitySlot.Ultimate, AbilityKind.AreaAttack, 0f, AbilityResource.SpecialMeter, 100f, 2f, 1, false, "Salto alto y lluvia de flechas laser en area.");
+            AbilityDefinition ulrichSprint = Ability("ulrich_supersprint", "Supersprint", LyokoCharacter.Ulrich, AbilitySlot.Ability1, AbilityKind.Dash, 4f, AbilityResource.None, 0f, 1.2f, 0, true, "Carrera ultrarrapida que atraviesa disparos y golpea al chocar.");
+            AbilityDefinition ulrichTriplicate = Ability("ulrich_triplicate", "Triplicado", LyokoCharacter.Ulrich, AbilitySlot.Ability2, AbilityKind.Clone, 14f, AbilityResource.None, 0f, 8f, 1, true, "Dos clones que atraen a los enemigos y hacen poco dano.");
+            AbilityDefinition ulrichTriangulate = Ability("ulrich_triangulate", "Triangular", LyokoCharacter.Ulrich, AbilitySlot.Passive, AbilityKind.Clone, 0f, AbilityResource.None, 0f, 0f, 1, true, "Supersprint con los clones activos: rodean al objetivo y el golpe del Ulrich real es critico.");
+            AbilityDefinition ulrichImpact = Ability("ulrich_impact", "Impacto", LyokoCharacter.Ulrich, AbilitySlot.Ultimate, AbilityKind.AreaAttack, 0f, AbilityResource.SpecialMeter, 100f, 0.5f, 4, true, "Golpe en area que derriba a todos. Llega con la segunda katana (Temporada 4).");
+            AbilityDefinition yumiGrab = Ability("yumi_tk_grab", "Telequinesis: agarrar", LyokoCharacter.Yumi, AbilitySlot.Ability1, AbilityKind.Telekinesis, 2f, AbilityResource.Concentration, 30f, 3f, 0, true, "Levanta un enemigo pequeno o una roca y la lanza.");
+            AbilityDefinition yumiWall = Ability("yumi_tk_wall", "Telequinesis: muro", LyokoCharacter.Yumi, AbilitySlot.Ability2, AbilityKind.Telekinesis, 10f, AbilityResource.Concentration, 45f, 5f, 1, true, "Levanta una barrera de terreno que para los laseres.");
+            AbilityDefinition yumiFanDance = Ability("yumi_fan_dance", "Danza de abanicos", LyokoCharacter.Yumi, AbilitySlot.Ultimate, AbilityKind.AreaAttack, 0f, AbilityResource.SpecialMeter, 100f, 2.5f, 1, false, "Torbellino de abanicos que atrae a los enemigos cercanos.");
+            AbilityDefinition aelitaBridge = Ability("aelita_creativity_bridge", "Creatividad: puente", LyokoCharacter.Aelita, AbilitySlot.Ability1, AbilityKind.Creativity, 6f, AbilityResource.None, 0f, 10f, 0, true, "Crea una plataforma temporal en las zonas marcadas.");
+            AbilityDefinition aelitaWall = Ability("aelita_creativity_wall", "Creatividad: muro", LyokoCharacter.Aelita, AbilitySlot.Ability2, AbilityKind.Creativity, 10f, AbilityResource.None, 0f, 6f, 1, true, "Crea un muro que bloquea el paso de los monstruos.");
+            AbilityDefinition aelitaWings = Ability("aelita_wings", "Alas", LyokoCharacter.Aelita, AbilitySlot.Passive, AbilityKind.Flight, 0f, AbilityResource.FlightEnergy, 0f, 0f, 3, true, "Planea y vuela con energia limitada (desde la Temporada 3).");
+            AbilityDefinition williamSmoke = Ability("william_super_smoke", "Supernube", LyokoCharacter.William, AbilitySlot.Ability1, AbilityKind.Dash, 6f, AbilityResource.None, 0f, 1.5f, 4, true, "Se convierte en humo negro: desplazamiento rapido e invulnerable.");
+            AbilityDefinition williamGuard = Ability("william_heavy_guard", "Bloqueo pesado", LyokoCharacter.William, AbilitySlot.Ability2, AbilityKind.Shield, 6f, AbilityResource.None, 0f, 3f, 4, false, "Aguanta casi cualquier golpe de frente.");
+            AbilityDefinition williamTitan = Ability("william_titan_strike", "Golpe del Titan", LyokoCharacter.William, AbilitySlot.Ultimate, AbilityKind.AreaAttack, 0f, AbilityResource.SpecialMeter, 100f, 0.8f, 4, false, "Carga y tajo que parte enemigos con armadura.");
+
+            SetAbilities(odd, oddShield, oddFutureFlash, oddClaws, oddFelineRain);
+            SetAbilities(ulrich, ulrichSprint, ulrichTriplicate, ulrichTriangulate, ulrichImpact);
+            SetAbilities(yumi, yumiGrab, yumiWall, yumiFanDance);
+            SetAbilities(aelita, aelitaBridge, aelitaWall, aelitaWings);
+            SetAbilities(william, williamSmoke, williamGuard, williamTitan);
+
+            SectorDefinition forestSector = EnsureSector(SectorId.Forest, "Sector Bosque", new Color(0.08f, 0.7f, 0.33f), "ForestSectorVerticalSlice", 1, "Arboles gigantes y caminos estrechos. Sector de la vertical slice.");
+            SectorDefinition desertSector = EnsureSector(SectorId.Desert, "Sector Desierto", new Color(0.95f, 0.55f, 0.18f), "", 0, "Mesetas y canones. Espacios abiertos para vehiculos.");
+            SectorDefinition iceSector = EnsureSector(SectorId.Ice, "Sector Hielo", new Color(0.7f, 0.9f, 1f), "", 0, "Glaciares, suelo resbaladizo y puentes de hielo.");
+            SectorDefinition mountainSector = EnsureSector(SectorId.Mountain, "Sector Montana", new Color(0.55f, 0.4f, 0.55f), "", 0, "Montanas flotantes y caminos al borde del vacio.");
+            SectorDefinition sector5 = EnsureSector(SectorId.Sector5, "Sector 5 (Cartago)", new Color(0.3f, 0.55f, 1f), "", 0, "Laberinto que cambia, Cupula Celeste, Nucleo de Lyoko y Arena.");
+            SectorDefinition digitalSea = EnsureSector(SectorId.DigitalSea, "Mar Digital", new Color(0.1f, 0.85f, 1f), "", 0, "Oceano de datos. Caer = devirtualizacion; en la T4 se navega con el Skidbladnir.");
+
+            MissionDefinition forestMission = EnsureForestMission();
+
+            ChapterDefinition prologue = EnsureChapter(0, "Prologo: El despertar de X.A.N.A.", "Precuela", "Jeremie encuentra la fabrica, enciende el superordenador y descubre Lyoko, a Aelita y a X.A.N.A.");
+            prologue.missions = new List<MissionDefinition>();
+            prologue.unlockedCharacters = new List<LyokoCharacter> { LyokoCharacter.Odd, LyokoCharacter.Ulrich, LyokoCharacter.Yumi };
+            prologue.unlockedSectors = new List<SectorDefinition> { forestSector };
+            prologue.unlockedAbilities = new List<AbilityDefinition> { ulrichSprint, yumiGrab, aelitaBridge, oddClaws };
+            EditorUtility.SetDirty(prologue);
+
+            ChapterDefinition chapter1 = EnsureChapter(1, "Materializar a Aelita", "Temporada 1", "X.A.N.A. activa torres mientras Jeremie trabaja para traer a Aelita al mundo real; al final descubren el virus que la ata al superordenador.");
+            chapter1.missions = new List<MissionDefinition> { forestMission };
+            chapter1.unlockedCharacters = new List<LyokoCharacter> { LyokoCharacter.Aelita };
+            chapter1.unlockedSectors = new List<SectorDefinition> { desertSector, iceSector, mountainSector };
+            chapter1.unlockedAbilities = new List<AbilityDefinition> { oddFutureFlash, ulrichTriplicate, yumiWall, aelitaWall };
+            EditorUtility.SetDirty(chapter1);
+
             RosterDatabase roster = LoadOrCreate<RosterDatabase>("RosterDatabase");
             roster.characters.Clear();
             roster.characters.AddRange(new[] { odd, ulrich, yumi, aelita, jeremie, william, xanaWilliam });
@@ -78,11 +157,179 @@ namespace CodeLyokoFanGame.EditorTools
             });
             roster.vehicles.Clear();
             roster.vehicles.AddRange(new[] { overboard, overbike, overwing, skid, navSkid, transportOrb, blackMantaVehicle });
+            roster.abilities.Clear();
+            roster.abilities.AddRange(new[]
+            {
+                oddShield, oddFutureFlash, oddClaws, oddFelineRain, ulrichSprint, ulrichTriplicate, ulrichTriangulate,
+                ulrichImpact, yumiGrab, yumiWall, yumiFanDance, aelitaBridge, aelitaWall, aelitaWings,
+                williamSmoke, williamGuard, williamTitan
+            });
+            roster.sectors.Clear();
+            roster.sectors.AddRange(new[] { forestSector, desertSector, iceSector, mountainSector, sector5, digitalSea });
+            roster.missions.Clear();
+            roster.missions.Add(forestMission);
+            roster.chapters.Clear();
+            roster.chapters.AddRange(new[] { prologue, chapter1 });
             EditorUtility.SetDirty(roster);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("Prototype data assets created in " + DataFolder);
+        }
+
+        // Created once; later rebuilds keep the values tuned in the Inspector.
+        public static MovementProfile EnsureMovementProfile()
+        {
+            string path = DataFolder + "/MovementProfile.asset";
+            MovementProfile profile = AssetDatabase.LoadAssetAtPath<MovementProfile>(path);
+            if (profile == null)
+            {
+                Directory.CreateDirectory(DataFolder);
+                profile = ScriptableObject.CreateInstance<MovementProfile>();
+                AssetDatabase.CreateAsset(profile, path);
+            }
+
+            return profile;
+        }
+
+        // Created once; later rebuilds keep the values tuned in the Inspector.
+        public static CombatProfile EnsureCombatProfile()
+        {
+            string path = DataFolder + "/CombatProfile.asset";
+            CombatProfile profile = AssetDatabase.LoadAssetAtPath<CombatProfile>(path);
+            if (profile == null)
+            {
+                Directory.CreateDirectory(DataFolder);
+                profile = ScriptableObject.CreateInstance<CombatProfile>();
+                AssetDatabase.CreateAsset(profile, path);
+            }
+
+            return profile;
+        }
+
+        private static ComboDefinition EnsureCombo(string assetName, params ComboStep[] steps)
+        {
+            ComboDefinition combo = LoadOrCreate<ComboDefinition>("Combos/" + assetName);
+            combo.steps = new List<ComboStep>(steps);
+            EditorUtility.SetDirty(combo);
+            return combo;
+        }
+
+        private static ComboStep ComboHit(string stepName, float damage, float radius, float forward, float duration, float windowStart, float windowEnd, float knockback, bool heavy)
+        {
+            return new ComboStep
+            {
+                stepName = stepName,
+                damageMultiplier = damage,
+                radiusMultiplier = radius,
+                forwardOffset = forward,
+                duration = duration,
+                chainWindowStart = windowStart,
+                chainWindowEnd = windowEnd,
+                knockback = knockback,
+                heavy = heavy
+            };
+        }
+
+        private static void SetWeakPointRules(EnemyDefinition enemy, bool instantKill, float knockbackScale)
+        {
+            enemy.weakPointInstantKill = instantKill;
+            enemy.knockbackScale = knockbackScale;
+            EditorUtility.SetDirty(enemy);
+        }
+
+        private static void SetTraits(CharacterDefinition character, bool doubleJump, bool wallClimb, bool longJump, bool glide)
+        {
+            character.canDoubleJump = doubleJump;
+            character.canWallClimb = wallClimb;
+            character.canLongJump = longJump;
+            character.canGlide = glide;
+            EditorUtility.SetDirty(character);
+        }
+
+        public static MissionDefinition EnsureForestMission()
+        {
+            SectorDefinition forest = AssetDatabase.LoadAssetAtPath<SectorDefinition>(DataFolder + "/Sectors/Forest.asset");
+            MissionDefinition mission = LoadOrCreate<MissionDefinition>("Missions/M01_ForestTower");
+            mission.missionId = "M01_ForestTower";
+            mission.displayName = "CODE LYOKO: Sector Bosque";
+            mission.sector = forest;
+            mission.briefing = "X.A.N.A. ha activado una torre en el Sector Bosque. Escoltad a Aelita hasta ella.";
+            mission.failedObjective = "Todos devirtualizados. Pulsa Reintentar (R / Y).";
+            mission.steps = new List<MissionStep>
+            {
+                Step(MissionPhase.Intro, "Jeremie: X.A.N.A. ha activado una torre. Entrad en Lyoko.", MissionStepCondition.Immediate, "", 0, 3f),
+                Step(MissionPhase.ReachBridge, "Llega al puente de datos y prueba los vehiculos.", MissionStepCondition.ReachMarker, "bridge", 0, 0f),
+                Step(MissionPhase.ClearCombatPlateau, "Limpia la plataforma de combate.", MissionStepCondition.EnemiesAtMost, "", 1, 0f),
+                Step(MissionPhase.EscortAelita, "Escolta a Aelita hasta la torre activada.", MissionStepCondition.ReachMarker, "tower", 0, 0f),
+                Step(MissionPhase.DefeatBoss, "Derrota al Megatank y protege a Aelita.", MissionStepCondition.EnemiesAtMost, "", 0, 0f),
+                Step(MissionPhase.DeactivateTower, "Manten Interactuar (E / RT) cerca de la torre para introducir CODE: LYOKO.", MissionStepCondition.TowerCleared, "", 0, 0f),
+                Step(MissionPhase.Complete, "Torre desactivada. Retorno al pasado listo.", MissionStepCondition.Never, "", 0, 0f)
+            };
+            EditorUtility.SetDirty(mission);
+            return mission;
+        }
+
+        private static MissionStep Step(MissionPhase phase, string objective, MissionStepCondition condition, string markerId, int enemyThreshold, float minSeconds)
+        {
+            return new MissionStep
+            {
+                phase = phase,
+                objective = objective,
+                condition = condition,
+                markerId = markerId,
+                enemyThreshold = enemyThreshold,
+                minSeconds = minSeconds
+            };
+        }
+
+        private static AbilityDefinition Ability(string id, string displayName, LyokoCharacter owner, AbilitySlot slot, AbilityKind kind, float cooldown, AbilityResource resource, float cost, float duration, int unlockChapter, bool canon, string description)
+        {
+            AbilityDefinition definition = LoadOrCreate<AbilityDefinition>("Abilities/" + id);
+            definition.abilityId = id;
+            definition.displayName = displayName;
+            definition.owner = owner;
+            definition.slot = slot;
+            definition.kind = kind;
+            definition.cooldown = cooldown;
+            definition.resource = resource;
+            definition.cost = cost;
+            definition.duration = duration;
+            definition.unlockChapter = unlockChapter;
+            definition.canon = canon;
+            definition.description = description;
+            EditorUtility.SetDirty(definition);
+            return definition;
+        }
+
+        private static void SetAbilities(CharacterDefinition character, params AbilityDefinition[] abilities)
+        {
+            character.abilities = new List<AbilityDefinition>(abilities);
+            EditorUtility.SetDirty(character);
+        }
+
+        private static SectorDefinition EnsureSector(SectorId id, string displayName, Color color, string sceneName, int towerCount, string notes)
+        {
+            SectorDefinition definition = LoadOrCreate<SectorDefinition>("Sectors/" + id);
+            definition.sectorId = id;
+            definition.displayName = displayName;
+            definition.themeColor = color;
+            definition.sceneName = sceneName;
+            definition.towerCount = towerCount;
+            definition.notes = notes;
+            EditorUtility.SetDirty(definition);
+            return definition;
+        }
+
+        private static ChapterDefinition EnsureChapter(int number, string title, string season, string synopsis)
+        {
+            ChapterDefinition definition = LoadOrCreate<ChapterDefinition>("Chapters/Chapter" + number.ToString("00"));
+            definition.chapterNumber = number;
+            definition.title = title;
+            definition.seasonLabel = season;
+            definition.synopsis = synopsis;
+            EditorUtility.SetDirty(definition);
+            return definition;
         }
 
         private static CharacterDefinition Character(string assetName, LyokoCharacter id, AttackStyle attack, VehicleStyle vehicle, float health, float walk, float sprint, float basic, float special, bool playable, string notes)

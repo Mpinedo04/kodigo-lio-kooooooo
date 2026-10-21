@@ -5,6 +5,7 @@ namespace CodeLyokoFanGame
     public sealed class TowerObjective : MonoBehaviour
     {
         [SerializeField] private AelitaCompanion aelita;
+        [SerializeField] private InputReader input;
         [SerializeField] private float requiredAelitaDistance = 6f;
         [SerializeField] private float activationSeconds = 4f;
         [SerializeField] private Renderer towerRenderer;
@@ -25,6 +26,7 @@ namespace CodeLyokoFanGame
         private void Start()
         {
             ApplyColor(activeColor);
+            GameManager.RaiseEvent(GameEventId.TowerActivated);
         }
 
         private void Update()
@@ -34,13 +36,14 @@ namespace CodeLyokoFanGame
                 return;
             }
 
-            if (Input.GetKey(KeyCode.E))
+            if (input != null && input.InteractHeld)
             {
                 progress += Time.deltaTime;
                 if (progress >= activationSeconds)
                 {
                     IsCleared = true;
                     ApplyColor(clearedColor);
+                    GameManager.RaiseEvent(GameEventId.TowerDeactivated);
                 }
             }
         }

@@ -32,6 +32,14 @@ MonoBehaviour:
   weakPointNotes: Eye of X.A.N.A.
   weakPointDamageMultiplier: 2.5
   weakPointAlwaysExposed: 0
+  weakPointInstantKill: 0
+  knockbackScale: 1
+  attacks: []
+  bossPhases: []
+  attackSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  devirtualizeSound: {fileID: 0}
+  devirtualizeVfx: {fileID: 0}
   appearsInVerticalSlice: 0
   prototypePrefab: {fileID: 0}
   finalModelPrefab: {fileID: 0}

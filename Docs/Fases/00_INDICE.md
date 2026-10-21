@@ -2,17 +2,17 @@
 
 Plan para llevar el prototipo al juego completo de [`BIBLIA_DEL_JUEGO.md`](../BIBLIA_DEL_JUEGO.md). Hay **un archivo por fase**: lee solo la fase en la que estés trabajando. Las reglas comunes están en [`00_REGLAS.md`](00_REGLAS.md).
 
-**Fase activa:** F01 — solo falta jugar la misión y anotar lo que falle (F1.6 y F1.7)
+**Fase activa:** F04 — solo falta probar el combate en la `CombatArena` (F4.17). También queda la prueba de la F03 en el `MovementGym` (F3.17). Después, F05
 
 **Estados:** `Pendiente` · `En curso` · `Hecha`. Al cambiar el estado de una fase, actualiza esta tabla y la línea **Fase activa**.
 
 | Fase | Nombre | Bloque | Depende de | Estimación | Estado |
 | --- | --- | --- | --- | --- | --- |
 | [F00](F00_entorno.md) | Preparar el entorno | A | — | 1 sem | Hecha |
-| [F01](F01_recuperar_prototipo.md) | Recuperar y estabilizar el prototipo | A | F00 | 1–2 sem | En curso |
-| [F02](F02_arquitectura.md) | Arquitectura base | A | F01 | 3 sem | Pendiente |
-| [F03](F03_movimiento_camara.md) | Movimiento y cámara | A | F02 | 2 sem | Pendiente |
-| [F04](F04_combate_base.md) | Combate base | B | F03 | 3 sem | Pendiente |
+| [F01](F01_recuperar_prototipo.md) | Recuperar y estabilizar el prototipo | A | F00 | 1–2 sem | Hecha |
+| [F02](F02_arquitectura.md) | Arquitectura base | A | F01 | 3 sem | Hecha |
+| [F03](F03_movimiento_camara.md) | Movimiento y cámara | A | F02 | 2 sem | En curso |
+| [F04](F04_combate_base.md) | Combate base | B | F03 | 3 sem | En curso |
 | [F05](F05_habilidades.md) | Habilidades de los personajes | B | F04 | 4 sem | Pendiente |
 | [F06](F06_enemigos_t1.md) | Enemigos de la Temporada 1 | B | F04 | 4 sem | Pendiente |
 | [F07](F07_aelita_torres_mision.md) | Aelita, torres y misión | B | F05, F06 | 2 sem | Pendiente |

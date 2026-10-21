@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2303339043376799247}
   - component: {fileID: 4179597491165307171}
   - component: {fileID: 3603120981065762904}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: XanaLaser
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,7 +147,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 24
-  damage: 15
   lifeTime: 3
-  hostileToPlayer: 0
+  gravity: 0
   impactPrefab: {fileID: 0}

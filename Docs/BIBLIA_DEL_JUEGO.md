@@ -629,27 +629,50 @@ Los vehículos los materializa el Operador (ver 5.6). Si el vehículo pierde tod
 
 ## 16. Controles
 
-Controles actuales del prototipo ([Hecho]) más los que faltan ([Pendiente]):
+Configurados en `Assets/Game/Input/LyokoControls.inputactions` (F02). **[Hecho]** = ya funciona al jugar; **[Tecla lista]** = la tecla existe, pero la mecánica llega en la fase indicada.
+
+**A pie (mapa `Lyoko`)**
+
+| Acción | Teclado/ratón | Mando (Xbox / PlayStation) | Estado |
+| --- | --- | --- | --- |
+| Moverse | `WASD` / flechas | Stick izq. | [Hecho] |
+| Cámara | Ratón | Stick der. | [Hecho] |
+| Correr | `Shift` | L3 | [Hecho] |
+| Saltar | `Space` | A / ✕ | [Hecho] |
+| Esquivar | `Ctrl` | B / ○ | [Hecho] |
+| Ataque básico (combos; mantener = cargado) | Clic izq. | X / □ | [Hecho] |
+| Ataque especial | Clic der. | Y / △ | [Hecho] |
+| Habilidad 1 | `Q` | LB / L1 | [Tecla lista] F05 |
+| Habilidad 2 | `F` | RB / R1 | [Tecla lista] F05 |
+| Definitiva | `X` | LB + RB / L1 + R1 | [Tecla lista] F05 |
+| Guardia / desvío | `C` | LT / L2 | [Hecho] |
+| Fijar objetivo | `Tab` | R3 | [Hecho] |
+| Vehículo | `V` | Cruceta arriba | [Hecho] |
+| Interactuar / torre | `E` (mantener) | RT / R2 (mantener) | [Hecho] |
+| Cambiar personaje | `1` `2` `3` `4` | Cruceta izq. / der. | [Hecho] (3 guerreros) |
+| Órdenes a Aelita | `Z` | Cruceta abajo | [Tecla lista] F07 |
+| Abrir Operador | `O` | Select / Share | [Tecla lista] F13 |
+| Cambiar Lyoko ↔ Tierra | `G` | — | [Tecla lista] F16 |
+
+**Montado (mapa `Vehicle`)**
 
 | Acción | Teclado/ratón | Mando | Estado |
 | --- | --- | --- | --- |
-| Moverse | `WASD` | Stick izq. | [Hecho] |
-| Cámara | Ratón | Stick der. | [Hecho] |
-| Correr | `Shift` | L3 | [Hecho] |
-| Saltar | `Space` | A / X | [Hecho] |
-| Ataque básico | Clic izq. | X / □ | [Hecho] |
-| Ataque especial | Clic der. | Y / △ | [Hecho] |
-| Fijar objetivo | `Tab` | R3 | [Hecho] |
-| Vehículo | `V` | B / ○ | [Hecho] |
-| Cambiar personaje | `1` `2` `3` `4` | Cruceta | [Hecho] 3 de 4 |
-| Interactuar / torre | `E` | B / ○ | [Hecho] |
-| Habilidad 1 | `Q` | LB / L1 | [Pendiente] |
-| Habilidad 2 | `F` | RB / R1 | [Pendiente] |
-| Definitiva | `Q` + `F` | LB + RB | [Pendiente] |
-| Esquivar | `Ctrl` | B / ○ | [Pendiente] |
-| Órdenes a Aelita | `Z` | Cruceta abajo | [Pendiente] |
-| Abrir Operador | `Tab` mantenido / `O` | Select | [Pendiente] |
-| Cambiar Lyoko ↔ Tierra | `G` | Select mantenido | [Pendiente] |
+| Dirigir | `WASD` | Stick izq. | [Hecho] |
+| Subir / bajar | `Space` / `Ctrl` | A / B | [Hecho] |
+| Turbo | `Shift` | RT / R2 | [Hecho] |
+| Disparar | Clic izq. | X / □ | [Hecho] |
+| Bajarse | `V` | Cruceta arriba | [Hecho] |
+
+**Interfaz (mapa `UI`)**
+
+| Acción | Teclado | Mando | Estado |
+| --- | --- | --- | --- |
+| Reintentar (misión fallida) | `R` | Y / △ | [Hecho] |
+| Pausa | `P` | Start / Options | [Tecla lista] F10 |
+| Menú de depuración | `F1` | — | [Hecho] (solo editor y builds de desarrollo) |
+
+También existen los mapas `RealWorld` (F14–F15) y `Operator` (F13), ya configurados.
 
 ---
 

@@ -29,6 +29,7 @@ namespace CodeLyokoFanGame
         private WaveEntry currentEntry;
 
         public bool HasSpawnedAll => spawnedWaveIndex >= waves.Count;
+        public Projectile EnemyProjectilePrefab => enemyProjectilePrefab;
 
         public void AddWave(EnemyKind kind, int count, float radius)
         {
@@ -85,44 +86,8 @@ namespace CodeLyokoFanGame
         private void SpawnOne(WaveEntry entry)
         {
             Vector2 circle = UnityEngine.Random.insideUnitCircle * entry.radius;
-            Vector3 position = transform.position + new Vector3(circle.x, 1.4f, circle.y);
-            GameObject enemyObject = new GameObject(entry.definition != null ? entry.definition.displayName : entry.fallbackKind.ToString());
-            enemyObject.tag = "Enemy";
-            enemyObject.transform.position = position;
-            enemyObject.AddComponent<Health>();
-            EnemyAI enemy = enemyObject.AddComponent<EnemyAI>();
-
-            GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            body.name = "RuntimeWavePlaceholder";
-            body.transform.SetParent(enemyObject.transform);
-            body.transform.localPosition = Vector3.up;
-            body.transform.localScale = Vector3.one;
-            UnityEngine.Object.Destroy(body.GetComponent<Collider>());
-
-            GameObject hitCollider = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            hitCollider.name = "HitCollider";
-            hitCollider.tag = "Enemy";
-            hitCollider.transform.SetParent(enemyObject.transform);
-            hitCollider.transform.localPosition = Vector3.up;
-            hitCollider.GetComponent<Renderer>().enabled = false;
-
-            GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            eye.name = "XanaEyeWeakPoint";
-            eye.tag = "Enemy";
-            eye.transform.SetParent(enemyObject.transform);
-            eye.transform.localPosition = new Vector3(0f, 1.25f, -0.55f);
-            eye.transform.localScale = Vector3.one * 0.32f;
-            eye.GetComponent<Collider>().isTrigger = true;
-            eye.AddComponent<WeakPoint>();
-
-            if (entry.definition != null)
-            {
-                enemy.Configure(entry.definition, enemyProjectilePrefab);
-            }
-            else
-            {
-                enemy.Configure(entry.fallbackKind, enemyProjectilePrefab);
-            }
+            Vector3 position = transform.position + new Vector3(circle.x, 0f, circle.y);
+            EnemyFactory.CreatePlaceholder(entry.definition, entry.fallbackKind, position, enemyProjectilePrefab);
         }
 
         private bool IsPlayerNear()

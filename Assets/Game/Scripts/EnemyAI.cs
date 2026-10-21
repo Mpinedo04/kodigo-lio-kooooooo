@@ -4,7 +4,7 @@ using CodeLyokoFanGame.Data;
 namespace CodeLyokoFanGame
 {
     [RequireComponent(typeof(Health))]
-    public sealed class EnemyAI : MonoBehaviour
+    public sealed class EnemyAI : MonoBehaviour, IKnockbackReceiver
     {
         [SerializeField] private EnemyDefinition definition;
         [SerializeField] private EnemyKind kind = EnemyKind.Kankrelat;
@@ -28,15 +28,23 @@ namespace CodeLyokoFanGame
         private float fireTimer;
         private float specialTimer;
         private float weakPointExposeTimer;
+        private float weakPointMultiplier = 2.5f;
+        private bool weakPointInstantKill;
+        private float knockbackScale = 1f;
+        private Vector3 knockbackVelocity;
+        private float contactTimer;
+        private const float ContactCooldown = 1f;
 
         public EnemyKind Kind => kind;
         public Transform AimPoint => aimPoint;
+        public Projectile ProjectilePrefab => projectilePrefab;
 
         public void Configure(EnemyDefinition newDefinition, Projectile projectile)
         {
             definition = newDefinition;
             projectilePrefab = projectile;
             ApplyDefinition(definition);
+            ConfigureWeakPoint();
         }
 
         public void Configure(EnemyKind newKind, Projectile projectile)
@@ -44,6 +52,7 @@ namespace CodeLyokoFanGame
             kind = newKind;
             projectilePrefab = projectile;
             ApplyKindStats();
+            ConfigureWeakPoint();
         }
 
         private void Awake()
@@ -62,6 +71,64 @@ namespace CodeLyokoFanGame
 
             ApplyKindStats();
             ApplyDefinition(definition);
+            Health health = GetComponent<Health>();
+            health.SetTeam(Team.Enemy);
+            health.Died += OnDied;
+            ConfigureWeakPoint();
+        }
+
+        private DamageInfo ContactHit(float amount)
+        {
+            return new DamageInfo
+            {
+                amount = amount,
+                type = DamageType.Melee,
+                source = gameObject,
+                sourceTeam = Team.Enemy,
+                direction = player != null ? player.position - transform.position : transform.forward,
+                knockback = 4f
+            };
+        }
+
+        public void SetAnchors(Transform fire, Transform aim)
+        {
+            firePoint = fire != null ? fire : transform;
+            aimPoint = aim != null ? aim : transform;
+        }
+
+        public void ApplyKnockback(Vector3 velocity)
+        {
+            knockbackVelocity += velocity * knockbackScale;
+        }
+
+        private void ConfigureWeakPoint()
+        {
+            if (weakPoint == null)
+            {
+                weakPoint = GetComponentInChildren<WeakPoint>();
+            }
+
+            if (weakPoint != null)
+            {
+                weakPoint.Configure(weakPointMultiplier, weakPointAlwaysExposed, weakPointInstantKill);
+            }
+        }
+
+        private void ApplyKnockbackMotion()
+        {
+            if (knockbackVelocity.sqrMagnitude < 0.01f)
+            {
+                knockbackVelocity = Vector3.zero;
+                return;
+            }
+
+            transform.position += knockbackVelocity * Time.deltaTime;
+            knockbackVelocity = Vector3.MoveTowards(knockbackVelocity, Vector3.zero, 30f * Time.deltaTime);
+        }
+
+        private void OnDied(Health health)
+        {
+            GameManager.RaiseEvent(GameEventId.EnemyKilled);
         }
 
         private void Update()
@@ -69,8 +136,10 @@ namespace CodeLyokoFanGame
             fireTimer -= Time.deltaTime;
             specialTimer -= Time.deltaTime;
             weakPointExposeTimer -= Time.deltaTime;
+            contactTimer -= Time.deltaTime;
             AcquirePlayer();
             UpdateWeakPointExposure();
+            ApplyKnockbackMotion();
 
             if (player == null)
             {
@@ -87,7 +156,8 @@ namespace CodeLyokoFanGame
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(flatDirection), Time.deltaTime * 8f);
             }
 
-            TickBehavior(distance, flatDirection, toPlayer.normalized);
+            Vector3 aimDirection = (player.position + Vector3.up - firePoint.position).normalized;
+            TickBehavior(distance, flatDirection, aimDirection);
         }
 
         private void AcquirePlayer()
@@ -128,8 +198,18 @@ namespace CodeLyokoFanGame
             }
 
             fireTimer = fireCooldown;
-            Projectile projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
-            projectile.Launch(gameObject, direction, projectileDamage, true, player, kind == EnemyKind.Hornet ? 2.5f : 0f);
+            Projectile projectile = PrefabPool.Spawn(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
+            bool heavy = kind == EnemyKind.Megatank || kind == EnemyKind.Kolossus;
+            DamageInfo info = new DamageInfo
+            {
+                amount = projectileDamage,
+                type = DamageType.Laser,
+                source = gameObject,
+                sourceTeam = Team.Enemy,
+                knockback = heavy ? 8f : 0f,
+                isHeavy = heavy
+            };
+            projectile.Launch(gameObject, Team.Enemy, direction, info, player, kind == EnemyKind.Hornet ? 2.5f : 0f);
         }
 
         private void TickBehavior(float distance, Vector3 flatDirection, Vector3 aimDirection)
@@ -260,7 +340,7 @@ namespace CodeLyokoFanGame
             Health health = player.GetComponent<Health>();
             if (health != null)
             {
-                health.TakeDamage(amount, gameObject);
+                health.TakeDamage(ContactHit(amount));
             }
         }
 
@@ -294,10 +374,16 @@ namespace CodeLyokoFanGame
                 return;
             }
 
+            if (contactTimer > 0f)
+            {
+                return;
+            }
+
+            contactTimer = ContactCooldown;
             Health health = player.GetComponent<Health>();
             if (health != null)
             {
-                health.TakeDamage(amount * Time.deltaTime, gameObject);
+                health.TakeDamage(ContactHit(amount));
             }
         }
 
@@ -305,7 +391,7 @@ namespace CodeLyokoFanGame
         {
             if (weakPoint == null)
             {
-                weakPoint = GetComponentInChildren<WeakPoint>();
+                ConfigureWeakPoint();
             }
 
             if (weakPoint != null)
@@ -332,6 +418,9 @@ namespace CodeLyokoFanGame
             contactDamage = enemyDefinition.contactDamage;
             hoverHeight = enemyDefinition.hoverHeight;
             weakPointAlwaysExposed = enemyDefinition.weakPointAlwaysExposed;
+            weakPointMultiplier = enemyDefinition.weakPointDamageMultiplier;
+            weakPointInstantKill = enemyDefinition.weakPointInstantKill;
+            knockbackScale = enemyDefinition.knockbackScale;
 
             Health health = GetComponent<Health>();
             if (health != null)
@@ -346,7 +435,7 @@ namespace CodeLyokoFanGame
 
             if (weakPoint != null)
             {
-                weakPoint.Configure(enemyDefinition.weakPointDamageMultiplier, weakPointAlwaysExposed);
+                weakPoint.Configure(enemyDefinition.weakPointDamageMultiplier, weakPointAlwaysExposed, enemyDefinition.weakPointInstantKill);
             }
         }
 
@@ -512,9 +601,29 @@ namespace CodeLyokoFanGame
                     break;
             }
 
+            weakPointInstantKill = kind == EnemyKind.Kankrelat || kind == EnemyKind.Hornet || kind == EnemyKind.ExplodingRoachster;
+            knockbackScale = KnockbackScaleFor(kind);
+
             if (health != null)
             {
                 health.SetMaxHealth(maxHealth);
+            }
+        }
+
+        private static float KnockbackScaleFor(EnemyKind enemyKind)
+        {
+            switch (enemyKind)
+            {
+                case EnemyKind.Megatank:
+                case EnemyKind.Kolossus:
+                case EnemyKind.Guardian:
+                    return 0f;
+                case EnemyKind.Krab:
+                case EnemyKind.Tarantula:
+                case EnemyKind.Blok:
+                    return 0.5f;
+                default:
+                    return 1f;
             }
         }
     }

@@ -16,9 +16,9 @@
 - [x] **F1.3** Ejecutar `Tools > Code Lyoko Fan Game > Create Prototype Data Assets` → comprobar que existe `Assets/Game/Data/RosterDatabase.asset`.
 - [x] **F1.4** Ejecutar `Tools > Code Lyoko Fan Game > Create Full Roster Placeholder Prefabs` → comprobar `Assets/Game/Generated/FullRosterPlaceholders/`.
 - [x] **F1.5** Ejecutar `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene` y guardar `Assets/Levels/ForestSectorVerticalSlice.unity`.
-- [ ] **F1.6** Pasar la lista de `Docs/UNITY_FIRST_OPEN_CHECKLIST.md` → apartado *What To Check* punto por punto.
-  - Comprobado sin jugar: assets de URP, `RosterDatabase.asset`, prefabs, escena y tag `Enemy` existen. Prueba automática (build ejecutada 60 s sin nadie a los mandos): la misión arranca, Odd → Ulrich → Yumi se devirtualizan por turnos y la misión pasa a *Failed*, sin excepciones. **Falta** probar los controles jugando.
-- [ ] **F1.7** (Lo tiene que hacer una persona) Jugar la misión entera de principio a fin y anotar en un issue todo lo que falle o se sienta mal (movimiento, cámara, enemigos, torre…).
+- [x] **F1.6** Pasar la lista de `Docs/UNITY_FIRST_OPEN_CHECKLIST.md` → apartado *What To Check* punto por punto.
+  - Comprobado sin jugar: assets de URP, `RosterDatabase.asset`, prefabs, escena y tag `Enemy` existen. Prueba automática (build ejecutada 60 s sin nadie a los mandos): la misión arranca, Odd → Ulrich → Yumi se devirtualizan por turnos y la misión pasa a *Failed*, sin excepciones. Probado jugando por el usuario: funciona.
+- [x] **F1.7** (Lo tiene que hacer una persona) Jugar la misión entera de principio a fin y anotar en un issue todo lo que falle o se sienta mal (movimiento, cámara, enemigos, torre…).
 - [x] **F1.8** Corregir los fallos que **impidan terminar la misión** (los de “se siente mal” van a fases posteriores).
   - Ya corregidos antes de abrir Unity: URP sin configurar (todo rosa); al morir un personaje se rompía el cambio de personaje (ahora pasa al siguiente vivo); Aelita no contaba como “cerca de la torre” por la altura; no había forma de reintentar (ahora, si caen todos, `R` reinicia); el HUD muestra los enemigos restantes.
 - [x] **F1.9** Ajustar la vida base a **100 PV** para que coincida con la serie: `CharacterDefinition`, `PrototypeDataAssetBuilder` y los jugadores de la escena generada.

@@ -6,13 +6,15 @@ namespace CodeLyokoFanGame
     public sealed class CharacterSwitcher : MonoBehaviour
     {
         [SerializeField] private List<PlayerController> characters = new List<PlayerController>();
-        [SerializeField] private ThirdPersonCamera thirdPersonCamera;
+        [SerializeField] private CameraRig cameraRig;
         [SerializeField] private LockOnSystem lockOnSystem;
+        [SerializeField] private InputReader input;
 
         private int activeIndex;
         private int handledDevirtualizedIndex = -1;
 
         public PlayerController ActiveCharacter => characters.Count == 0 ? null : characters[activeIndex];
+        public IReadOnlyList<PlayerController> Characters => characters;
 
         public bool HasAliveCharacter
         {
@@ -42,7 +44,7 @@ namespace CodeLyokoFanGame
         {
             for (int i = 0; i < characters.Count; i++)
             {
-                characters[i].Initialize(Camera.main != null ? Camera.main.transform : null, lockOnSystem);
+                characters[i].Initialize(Camera.main != null ? Camera.main.transform : null, lockOnSystem, input);
             }
 
             Activate(0);
@@ -50,16 +52,32 @@ namespace CodeLyokoFanGame
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1)) Activate(0);
-            if (Input.GetKeyDown(KeyCode.Alpha2)) Activate(1);
-            if (Input.GetKeyDown(KeyCode.Alpha3)) Activate(2);
+            if (input != null)
+            {
+                int requested = input.SwitchCharacterRequest;
+                if (requested >= 0)
+                {
+                    Activate(requested);
+                }
+
+                if (input.NextCharacterPressed)
+                {
+                    ActivateNextAlive(1);
+                }
+
+                if (input.PreviousCharacterPressed)
+                {
+                    ActivateNextAlive(-1);
+                }
+            }
 
             // A devirtualized warrior hands control to the next one still in Lyoko.
             if (characters.Count > 0 && activeIndex != handledDevirtualizedIndex && !IsAlive(activeIndex))
             {
                 handledDevirtualizedIndex = activeIndex;
                 Debug.Log("[Lyoko] " + (ActiveCharacter != null ? ActiveCharacter.name : "Warrior") + " devirtualized.");
-                ActivateNextAlive();
+                GameManager.RaiseEvent(GameEventId.PlayerDevirtualized);
+                ActivateNextAlive(1);
             }
         }
 
@@ -70,8 +88,15 @@ namespace CodeLyokoFanGame
                 return;
             }
 
-            Vector3 handoffPosition = ActiveCharacter != null ? ActiveCharacter.transform.position : characters[index].transform.position;
-            Quaternion handoffRotation = ActiveCharacter != null ? ActiveCharacter.transform.rotation : characters[index].transform.rotation;
+            PlayerController outgoing = ActiveCharacter;
+            Vector3 handoffPosition = characters[index].transform.position;
+            Quaternion handoffRotation = characters[index].transform.rotation;
+            if (outgoing != null)
+            {
+                // A devirtualized warrior may have fallen into the Digital Sea: never hand off there.
+                handoffPosition = IsAlive(activeIndex) ? outgoing.transform.position : outgoing.LastGroundedPosition + Vector3.up * 0.2f;
+                handoffRotation = outgoing.transform.rotation;
+            }
 
             activeIndex = index;
 
@@ -87,9 +112,9 @@ namespace CodeLyokoFanGame
                 characters[i].SetControlActive(i == activeIndex);
             }
 
-            if (thirdPersonCamera != null)
+            if (cameraRig != null)
             {
-                thirdPersonCamera.SetTarget(characters[activeIndex].transform);
+                cameraRig.SetTarget(characters[activeIndex]);
             }
 
             if (lockOnSystem != null)
@@ -98,12 +123,13 @@ namespace CodeLyokoFanGame
             }
         }
 
-        private void ActivateNextAlive()
+        private void ActivateNextAlive(int direction)
         {
-            for (int offset = 1; offset <= characters.Count; offset++)
+            int count = characters.Count;
+            for (int offset = 1; offset <= count; offset++)
             {
-                int index = (activeIndex + offset) % characters.Count;
-                if (IsAlive(index))
+                int index = ((activeIndex + offset * direction) % count + count) % count;
+                if (index != activeIndex && IsAlive(index))
                 {
                     Activate(index);
                     return;

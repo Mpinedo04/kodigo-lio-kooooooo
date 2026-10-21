@@ -48,8 +48,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 80
+  team: 0
   destroyOnDeath: 1
   destroyDelay: 0.05
+  hitInvulnerability: 0
+  devirtualizeEffect: 1
 --- !u!114 &4609399151747025340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 3985865384046416962}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.185, z: -0.54}
+  m_LocalPosition: {x: 0, y: 1.185, z: 0.70000005}
   m_LocalScale: {x: 0.36, y: 0.36, z: 0.36}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -199,6 +202,8 @@ MonoBehaviour:
   target: {fileID: 0}
   damageMultiplier: 2.5
   exposed: 1
+  instantKill: 0
+  exposePulseSeconds: 0.35
 --- !u!1 &6616410273582751832
 GameObject:
   m_ObjectHideFlags: 0

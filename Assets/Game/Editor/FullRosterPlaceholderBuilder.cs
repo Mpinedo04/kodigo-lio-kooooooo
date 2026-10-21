@@ -105,7 +105,7 @@ namespace CodeLyokoFanGame.EditorTools
             Vector3 scale = kind == EnemyKind.Kolossus ? new Vector3(4f, 6f, 2f) : EnemyScale(kind);
             Primitive("Body", kind == EnemyKind.Megatank ? PrimitiveType.Sphere : PrimitiveType.Cube, root.transform, Vector3.up, scale, bodyMaterial);
 
-            GameObject eye = Primitive("XanaEyeWeakPoint", PrimitiveType.Sphere, root.transform, new Vector3(0f, scale.y * 0.65f + 0.6f, -scale.z * 0.45f), Vector3.one * 0.36f, eyeMaterial);
+            GameObject eye = Primitive("XanaEyeWeakPoint", PrimitiveType.Sphere, root.transform, new Vector3(0f, scale.y * 0.65f + 0.6f, scale.z * 0.5f + 0.1f), Vector3.one * 0.36f, eyeMaterial);
             Collider eyeCollider = eye.GetComponent<Collider>();
             if (eyeCollider != null)
             {

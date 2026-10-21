@@ -5,17 +5,17 @@ namespace CodeLyokoFanGame
     public sealed class GameHud : MonoBehaviour
     {
         [SerializeField] private CharacterSwitcher switcher;
-        [SerializeField] private MissionDirector missionDirector;
+        [SerializeField] private MissionRunner missionRunner;
         [SerializeField] private TowerObjective tower;
         [SerializeField] private AelitaCompanion aelita;
 
         private GUIStyle panelStyle;
         private GUIStyle titleStyle;
 
-        public void Configure(CharacterSwitcher newSwitcher, MissionDirector newDirector, TowerObjective newTower, AelitaCompanion newAelita)
+        public void Configure(CharacterSwitcher newSwitcher, MissionRunner newRunner, TowerObjective newTower, AelitaCompanion newAelita)
         {
             switcher = newSwitcher;
-            missionDirector = newDirector;
+            missionRunner = newRunner;
             tower = newTower;
             aelita = newAelita;
         }
@@ -23,7 +23,28 @@ namespace CodeLyokoFanGame
         private void OnGUI()
         {
             EnsureStyles();
-            GUILayout.BeginArea(new Rect(18, Screen.height - 178, 560, 160), panelStyle);
+            DrawMissionPanel();
+            DrawStatusPanel();
+        }
+
+        private void DrawMissionPanel()
+        {
+            GUILayout.BeginArea(new Rect(18, 18, 560, 110), panelStyle);
+            string title = missionRunner != null && missionRunner.Mission != null ? missionRunner.Mission.displayName : "CODE LYOKO";
+            GUILayout.Label(title, titleStyle);
+            GUILayout.Label("1-3 / cruceta: personaje  |  V: vehiculo  |  Tab / R3: fijar  |  E / RT: torre");
+
+            if (missionRunner != null)
+            {
+                GUILayout.Label("Objetivo: " + missionRunner.CurrentObjectiveText);
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private void DrawStatusPanel()
+        {
+            GUILayout.BeginArea(new Rect(18, Screen.height - 196, 560, 178), panelStyle);
             GUILayout.Label("Lyoko HUD", titleStyle);
 
             PlayerController player = switcher != null ? switcher.ActiveCharacter : null;
@@ -31,6 +52,7 @@ namespace CodeLyokoFanGame
             {
                 Health health = player.GetComponent<Health>();
                 GUILayout.Label("Personaje: " + player.Character + " | Vida: " + FormatHealth(health) + " | Vehiculo: " + (player.IsMounted ? "Activo" : "No"));
+                DrawCombatLine(player);
             }
 
             if (aelita != null)
@@ -39,14 +61,9 @@ namespace CodeLyokoFanGame
                 GUILayout.Label("Aelita: " + FormatHealth(aelitaHealth));
             }
 
-            if (missionDirector != null)
+            if (missionRunner != null && missionRunner.ShowsEnemyCount)
             {
-                GUILayout.Label("Objetivo: " + missionDirector.CurrentObjectiveText);
-
-                if (missionDirector.Phase == MissionPhase.ClearCombatPlateau || missionDirector.Phase == MissionPhase.DefeatBoss)
-                {
-                    GUILayout.Label("Enemigos restantes: " + missionDirector.RemainingEnemies);
-                }
+                GUILayout.Label("Enemigos restantes: " + missionRunner.RemainingEnemies);
             }
 
             if (tower != null)
@@ -55,6 +72,29 @@ namespace CodeLyokoFanGame
             }
 
             GUILayout.EndArea();
+        }
+
+        private static void DrawCombatLine(PlayerController player)
+        {
+            PlayerCombat combat = player.GetComponent<PlayerCombat>();
+            if (combat == null || combat.Meter == null)
+            {
+                return;
+            }
+
+            string line = "Energia especial: " + Mathf.RoundToInt(combat.Meter.Normalized * 100f) + "%" + (combat.Meter.IsFull ? " (LLENA)" : string.Empty);
+            if (combat.IsCharging)
+            {
+                line += "  |  Carga: " + Mathf.RoundToInt(combat.ChargeProgress * 100f) + "%";
+            }
+
+            PlayerGuard guard = player.GetComponent<PlayerGuard>();
+            if (guard != null && Time.time - guard.LastParryTime < 0.6f)
+            {
+                line += "  |  DESVIO!";
+            }
+
+            GUILayout.Label(line);
         }
 
         private void EnsureStyles()

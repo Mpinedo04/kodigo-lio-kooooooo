@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CodeLyokoFanGame
@@ -5,82 +6,112 @@ namespace CodeLyokoFanGame
     public sealed class Projectile : MonoBehaviour
     {
         [SerializeField] private float speed = 24f;
-        [SerializeField] private float damage = 15f;
         [SerializeField] private float lifeTime = 3f;
-        [SerializeField] private bool hostileToPlayer;
+        [Tooltip("Downward acceleration (0 = straight laser).")]
+        [SerializeField] private float gravity;
         [SerializeField] private GameObject impactPrefab;
 
+        private readonly HashSet<Health> alreadyHit = new HashSet<Health>();
         private GameObject owner;
+        private Team team;
+        private DamageInfo damage;
         private Transform homingTarget;
         private float homingStrength;
+        private int piercesLeft;
+        private float remainingLife;
+        private Vector3 velocity;
+        private Vector3 baseScale;
+        private bool scaleCaptured;
 
-        public void Launch(GameObject projectileOwner, Vector3 direction, float newDamage, bool newHostileToPlayer, Transform target = null, float newHomingStrength = 0f)
+        public void Launch(GameObject projectileOwner, Team ownerTeam, Vector3 direction, DamageInfo hit, Transform target = null, float newHomingStrength = 0f, int pierce = 0, float scale = 1f)
         {
+            if (!scaleCaptured)
+            {
+                baseScale = transform.localScale;
+                scaleCaptured = true;
+            }
+
             owner = projectileOwner;
-            damage = newDamage;
-            hostileToPlayer = newHostileToPlayer;
+            team = ownerTeam;
+            damage = hit;
             homingTarget = target;
             homingStrength = newHomingStrength;
-            transform.forward = direction.sqrMagnitude > 0.001f ? direction.normalized : transform.forward;
+            piercesLeft = Mathf.Max(0, pierce);
+            remainingLife = lifeTime;
+            alreadyHit.Clear();
+            transform.localScale = baseScale * scale;
+
+            Vector3 forward = direction.sqrMagnitude > 0.001f ? direction.normalized : transform.forward;
+            velocity = forward * speed;
+            transform.forward = forward;
         }
 
         private void Update()
         {
-            if (homingTarget != null)
+            if (homingTarget != null && homingTarget.gameObject.activeInHierarchy)
             {
-                Vector3 desired = (homingTarget.position - transform.position).normalized;
-                transform.forward = Vector3.Slerp(transform.forward, desired, Time.deltaTime * homingStrength);
+                Vector3 desired = (homingTarget.position - transform.position).normalized * velocity.magnitude;
+                velocity = Vector3.Slerp(velocity, desired, Time.deltaTime * homingStrength);
             }
 
-            transform.position += transform.forward * speed * Time.deltaTime;
-            lifeTime -= Time.deltaTime;
-
-            if (lifeTime <= 0f)
+            velocity += Vector3.down * gravity * Time.deltaTime;
+            transform.position += velocity * Time.deltaTime;
+            if (velocity.sqrMagnitude > 0.001f)
             {
-                Destroy(gameObject);
+                transform.forward = velocity;
+            }
+
+            remainingLife -= Time.deltaTime;
+            if (remainingLife <= 0f)
+            {
+                PrefabPool.Despawn(gameObject);
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
+            if (!gameObject.activeSelf)
+            {
+                return;
+            }
+
             if (owner != null && other.transform.IsChildOf(owner.transform))
             {
                 return;
             }
 
-            bool hitPlayer = other.CompareTag("Player");
-            bool hitEnemy = other.CompareTag("Enemy") || other.GetComponentInParent<EnemyAI>() != null;
+            // Walls and floors stop shots.
+            if (GameLayers.Is(other.gameObject, GameLayers.Environment) && !other.isTrigger)
+            {
+                Impact();
+                return;
+            }
 
-            if (hostileToPlayer && !hitPlayer)
+            DamageInfo hit = damage;
+            hit.point = transform.position;
+            hit.direction = velocity;
+            if (HitResolver.ApplyToCollider(other, hit, team, alreadyHit) == null)
             {
                 return;
             }
 
-            if (!hostileToPlayer && !hitEnemy)
+            if (piercesLeft > 0)
             {
+                piercesLeft--;
                 return;
             }
 
-            WeakPoint weakPoint = other.GetComponent<WeakPoint>();
-            if (weakPoint != null)
-            {
-                weakPoint.ApplyDamage(damage, owner);
-            }
-            else
-            {
-                Health health = other.GetComponentInParent<Health>();
-                if (health != null)
-                {
-                    health.TakeDamage(damage, owner);
-                }
-            }
+            Impact();
+        }
 
+        private void Impact()
+        {
             if (impactPrefab != null)
             {
                 Instantiate(impactPrefab, transform.position, Quaternion.identity);
             }
 
-            Destroy(gameObject);
+            PrefabPool.Despawn(gameObject);
         }
     }
 }

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f2685d4f030bf4bac96967198989ae, type: 3}
+  m_Name: Chapter00
+  m_EditorClassIdentifier: 
+  chapterNumber: 0
+  title: 'Prologo: El despertar de X.A.N.A.'
+  seasonLabel: Precuela
+  synopsis: Jeremie encuentra la fabrica, enciende el superordenador y descubre Lyoko,
+    a Aelita y a X.A.N.A.
+  missions: []
+  unlockedCharacters: 000000000100000002000000
+  unlockedSectors:
+  - {fileID: 11400000, guid: d2a2fbe56c6ed59428e0f5d5d8af1209, type: 2}
+  unlockedAbilities:
+  - {fileID: 11400000, guid: 0fc9f60feefbfa64893c58423333dcfa, type: 2}
+  - {fileID: 11400000, guid: 097077732a8f78e4e9ca35e979a8e8a9, type: 2}
+  - {fileID: 11400000, guid: cb23acac2fbd5fc40a85812b740e2e7a, type: 2}
+  - {fileID: 11400000, guid: a6f4b2e8c5f16064a84ce2f9765d7068, type: 2}

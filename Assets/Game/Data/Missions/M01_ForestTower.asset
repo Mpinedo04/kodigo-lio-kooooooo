@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05fa6a1adc4d1e040a038afa363867cd, type: 3}
+  m_Name: M01_ForestTower
+  m_EditorClassIdentifier: 
+  missionId: M01_ForestTower
+  displayName: 'CODE LYOKO: Sector Bosque'
+  sector: {fileID: 11400000, guid: d2a2fbe56c6ed59428e0f5d5d8af1209, type: 2}
+  briefing: X.A.N.A. ha activado una torre en el Sector Bosque. Escoltad a Aelita
+    hasta ella.
+  steps:
+  - phase: 0
+    objective: 'Jeremie: X.A.N.A. ha activado una torre. Entrad en Lyoko.'
+    condition: 0
+    markerId: 
+    enemyThreshold: 0
+    minSeconds: 3
+  - phase: 1
+    objective: Llega al puente de datos y prueba los vehiculos.
+    condition: 1
+    markerId: bridge
+    enemyThreshold: 0
+    minSeconds: 0
+  - phase: 2
+    objective: Limpia la plataforma de combate.
+    condition: 2
+    markerId: 
+    enemyThreshold: 1
+    minSeconds: 0
+  - phase: 3
+    objective: Escolta a Aelita hasta la torre activada.
+    condition: 1
+    markerId: tower
+    enemyThreshold: 0
+    minSeconds: 0
+  - phase: 4
+    objective: Derrota al Megatank y protege a Aelita.
+    condition: 2
+    markerId: 
+    enemyThreshold: 0
+    minSeconds: 0
+  - phase: 5
+    objective: 'Manten Interactuar (E / RT) cerca de la torre para introducir CODE:
+      LYOKO.'
+    condition: 3
+    markerId: 
+    enemyThreshold: 0
+    minSeconds: 0
+  - phase: 6
+    objective: Torre desactivada. Retorno al pasado listo.
+    condition: 4
+    markerId: 
+    enemyThreshold: 0
+    minSeconds: 0
+  failedObjective: Todos devirtualizados. Pulsa Reintentar (R / Y).
+  aelitaLostObjective: 'Aelita ha sido devirtualizada: X.A.N.A. gana. Pulsa Reintentar
+    (R / Y).'

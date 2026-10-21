@@ -29,6 +29,19 @@ MonoBehaviour:
   specialDamage: 38
   basicCooldown: 0.28
   specialCooldown: 1.6
+  meleeCombo: {fileID: 0}
+  canDoubleJump: 0
+  canWallClimb: 0
+  canLongJump: 1
+  canGlide: 0
+  abilities:
+  - {fileID: 11400000, guid: 097077732a8f78e4e9ca35e979a8e8a9, type: 2}
+  - {fileID: 11400000, guid: 05c23c5f36c522d4c9185b6677850905, type: 2}
+  - {fileID: 11400000, guid: 8834f7a80ea847b44b574d2ba0ad7847, type: 2}
+  portrait: {fileID: 0}
+  icon: {fileID: 0}
+  outfits: []
+  voiceLines: []
   playableInVerticalSlice: 1
   prototypePrefab: {fileID: 0}
   finalModelPrefab: {fileID: 0}

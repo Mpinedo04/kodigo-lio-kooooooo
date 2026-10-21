@@ -1,5 +1,7 @@
 using System.IO;
+using Cinemachine;
 using CodeLyokoFanGame;
+using CodeLyokoFanGame.Data;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditorInternal;
@@ -13,7 +15,7 @@ namespace CodeLyokoFanGame.EditorTools
         private const string GeneratedFolder = "Assets/Game/Generated";
         private const string PrefabFolder = GeneratedFolder + "/Prefabs";
         private const string MaterialFolder = GeneratedFolder + "/Materials";
-        private const string ScenePath = "Assets/Levels/ForestSectorVerticalSlice.unity";
+        private const string ScenePath = ProjectScenes.ForestScenePath;
 
         [MenuItem("Tools/Code Lyoko Fan Game/Build Vertical Slice Scene")]
         public static void BuildScene()
@@ -22,6 +24,10 @@ namespace CodeLyokoFanGame.EditorTools
             UrpPipelineSetup.EnsurePipeline();
             EnsureTag("Player");
             EnsureTag("Enemy");
+            PhysicsLayersSetup.EnsureLayers();
+            InputReader input = CoreAssetsBuilder.EnsureInputReader();
+            CoreAssetsBuilder.EnsureEventSet();
+            MissionDefinition mission = PrototypeDataAssetBuilder.EnsureForestMission();
 
             Material forest = Material("Lyoko_Forest_Green", new Color(0.08f, 0.7f, 0.33f), 0.2f);
             Material dark = Material("Lyoko_Dark_Metal", new Color(0.06f, 0.08f, 0.09f), 0.1f);
@@ -50,29 +56,27 @@ namespace CodeLyokoFanGame.EditorTools
             GameObject systems = new GameObject("GameSystems");
             LockOnSystem lockOn = systems.AddComponent<LockOnSystem>();
             CharacterSwitcher switcher = systems.AddComponent<CharacterSwitcher>();
-            MissionManager mission = systems.AddComponent<MissionManager>();
-            MissionDirector missionDirector = systems.AddComponent<MissionDirector>();
+            MissionRunner missionRunner = systems.AddComponent<MissionRunner>();
             GameHud hud = systems.AddComponent<GameHud>();
             DigitalSeaHazard sea = systems.AddComponent<DigitalSeaHazard>();
 
-            Camera camera = CreateCamera(lockOn);
-            ThirdPersonCamera thirdPerson = camera.GetComponent<ThirdPersonCamera>();
-            SetPrivate(switcher, "thirdPersonCamera", thirdPerson);
+            CameraRig cameraRig = CreateCameraRig(lockOn, input);
+            SetPrivate(switcher, "cameraRig", cameraRig);
             SetPrivate(switcher, "lockOnSystem", lockOn);
+            SetPrivate(switcher, "input", input);
+            SetPrivate(lockOn, "input", input);
 
             CreateLighting();
             CreateLevelGeometry(forest, dark, cyan);
 
             Transform respawn = new GameObject("RespawnPoint").transform;
             respawn.position = new Vector3(0f, 4f, -12f);
-            SetPrivate(sea, "respawnPoint", respawn);
+            sea.Configure(false, respawn);
             CreateCheckpoint("BridgeCheckpoint", new Vector3(0f, 1f, 8f));
             CreateCheckpoint("TowerCheckpoint", new Vector3(0f, 1f, 38f));
 
-            Transform bridgeMarker = new GameObject("BridgeMissionMarker").transform;
-            bridgeMarker.position = new Vector3(0f, 1f, 8f);
-            Transform towerMarker = new GameObject("TowerMissionMarker").transform;
-            towerMarker.position = new Vector3(0f, 1f, 45f);
+            CreateMissionMarker("BridgeMissionMarker", "bridge", new Vector3(0f, 1f, 8f));
+            CreateMissionMarker("TowerMissionMarker", "tower", new Vector3(0f, 1f, 45f));
 
             PlayerController odd = CreatePlayer("Odd", LyokoCharacter.Odd, AttackStyle.Ranged, VehicleStyle.Overboard, violet, overboard, playerProjectile, switcher, lockOn, new Vector3(0f, 2f, -12f));
             PlayerController ulrich = CreatePlayer("Ulrich", LyokoCharacter.Ulrich, AttackStyle.Melee, VehicleStyle.Overbike, green, overbike, playerProjectile, switcher, lockOn, new Vector3(0f, 2f, -12f));
@@ -84,25 +88,21 @@ namespace CodeLyokoFanGame.EditorTools
 
             AelitaCompanion aelita = CreateAelita(pink, switcher, new Vector3(-2.2f, 2f, -13f));
             TowerObjective tower = CreateTower(cyan, red, aelita);
-            SetPrivate(mission, "tower", tower);
-            SetPrivate(mission, "switcher", switcher);
-            missionDirector.SetTower(tower);
-            missionDirector.SetAelita(aelita);
-            missionDirector.SetSwitcher(switcher);
-            SetPrivate(missionDirector, "bridgeMarker", bridgeMarker);
-            SetPrivate(missionDirector, "towerMarker", towerMarker);
-            hud.Configure(switcher, missionDirector, tower, aelita);
+            SetPrivate(tower, "input", input);
+            missionRunner.Configure(mission, tower, switcher, input, aelita);
+            EditorUtility.SetDirty(missionRunner);
+            hud.Configure(switcher, missionRunner, tower, aelita);
 
-            CreateEnemy("Kankrelat_A", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(7f, 2f, 3f));
-            CreateEnemy("Kankrelat_B", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(-8f, 2f, 7f));
-            CreateEnemy("Blok_A", EnemyKind.Blok, dark, red, enemyProjectile, new Vector3(14f, 2f, 15f));
-            CreateEnemy("Krab_A", EnemyKind.Krab, dark, red, enemyProjectile, new Vector3(-14f, 2f, 20f));
+            CreateEnemy("Kankrelat_A", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(3f, 0.5f, 4f));
+            CreateEnemy("Kankrelat_B", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(-3f, 0.5f, 9f));
+            CreateEnemy("Blok_A", EnemyKind.Blok, dark, red, enemyProjectile, new Vector3(10f, 0.5f, 22f));
+            CreateEnemy("Krab_A", EnemyKind.Krab, dark, red, enemyProjectile, new Vector3(-10f, 0.5f, 24f));
             CreateEnemy("Hornet_A", EnemyKind.Hornet, orange, red, enemyProjectile, new Vector3(8f, 5f, 27f));
-            CreateEnemy("Megatank_Boss", EnemyKind.Megatank, dark, red, enemyProjectile, new Vector3(0f, 2.2f, 41f));
-            CreateWaveSpawner("TowerReinforcementWave", enemyProjectile, new Vector3(0f, 1f, 35f));
+            CreateEnemy("Megatank_Boss", EnemyKind.Megatank, dark, red, enemyProjectile, new Vector3(0f, 0.9f, 43f));
+            CreateWaveSpawner("TowerReinforcementWave", enemyProjectile, new Vector3(0f, 0.5f, 35f));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            ProjectScenes.RefreshBuildSettings();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath);
@@ -110,7 +110,7 @@ namespace CodeLyokoFanGame.EditorTools
             Debug.Log("Code Lyoko vertical slice generated at " + ScenePath);
         }
 
-        private static void EnsureFolders()
+        internal static void EnsureFolders()
         {
             Directory.CreateDirectory(GeneratedFolder);
             Directory.CreateDirectory(PrefabFolder);
@@ -118,7 +118,7 @@ namespace CodeLyokoFanGame.EditorTools
             Directory.CreateDirectory("Assets/Levels");
         }
 
-        private static void EnsureTag(string tag)
+        internal static void EnsureTag(string tag)
         {
             string[] tags = InternalEditorUtility.tags;
             for (int i = 0; i < tags.Length; i++)
@@ -132,7 +132,7 @@ namespace CodeLyokoFanGame.EditorTools
             InternalEditorUtility.AddTag(tag);
         }
 
-        private static Material Material(string name, Color color, float emission)
+        internal static Material Material(string name, Color color, float emission)
         {
             string path = MaterialFolder + "/" + name + ".mat";
             Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -156,13 +156,18 @@ namespace CodeLyokoFanGame.EditorTools
             return material;
         }
 
-        private static Projectile BuildProjectilePrefab(string name, Material material, bool hostile)
+        internal static Projectile BuildProjectilePrefab(string name, Material material, bool hostile)
         {
             string path = PrefabFolder + "/" + name + ".prefab";
+            string layer = hostile ? GameLayers.EnemyAttack : GameLayers.PlayerAttack;
             Projectile existing = AssetDatabase.LoadAssetAtPath<Projectile>(path);
             if (existing != null)
             {
-                return existing;
+                GameObject contents = PrefabUtility.LoadPrefabContents(path);
+                GameLayers.SetRecursively(contents, layer);
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+                PrefabUtility.UnloadPrefabContents(contents);
+                return AssetDatabase.LoadAssetAtPath<Projectile>(path);
             }
 
             GameObject root = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -172,14 +177,15 @@ namespace CodeLyokoFanGame.EditorTools
             Collider collider = root.GetComponent<Collider>();
             collider.isTrigger = true;
             root.AddComponent<Rigidbody>().isKinematic = true;
-            Projectile projectile = root.AddComponent<Projectile>();
+            root.AddComponent<Projectile>();
+            GameLayers.SetRecursively(root, layer);
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab.GetComponent<Projectile>();
         }
 
-        private static VehicleRig BuildVehiclePrefab(string name, VehicleStyle style, Material material, PrimitiveType primitive)
+        internal static VehicleRig BuildVehiclePrefab(string name, VehicleStyle style, Material material, PrimitiveType primitive)
         {
             string path = PrefabFolder + "/" + name + ".prefab";
             VehicleRig existing = AssetDatabase.LoadAssetAtPath<VehicleRig>(path);
@@ -211,19 +217,106 @@ namespace CodeLyokoFanGame.EditorTools
             return prefab.GetComponent<VehicleRig>();
         }
 
-        private static Camera CreateCamera(LockOnSystem lockOn)
+        internal static CameraRig CreateCameraRig(LockOnSystem lockOn, InputReader input)
         {
-            GameObject cameraObject = new GameObject("ThirdPersonCamera");
-            Camera camera = cameraObject.AddComponent<Camera>();
+            GameObject cameraObject = new GameObject("MainCamera");
+            cameraObject.AddComponent<Camera>();
             cameraObject.tag = "MainCamera";
             cameraObject.transform.position = new Vector3(0f, 7f, -20f);
             cameraObject.AddComponent<AudioListener>();
-            ThirdPersonCamera follow = cameraObject.AddComponent<ThirdPersonCamera>();
-            SetPrivate(follow, "lockOn", lockOn);
-            return camera;
+            CinemachineBrain brain = cameraObject.AddComponent<CinemachineBrain>();
+            brain.m_DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Style.EaseInOut, 0.35f);
+
+            GameObject rigObject = new GameObject("CameraRig");
+            CameraRig rig = rigObject.AddComponent<CameraRig>();
+            CinemachineImpulseSource impulse = rigObject.AddComponent<CinemachineImpulseSource>();
+            impulse.m_ImpulseDefinition.m_ImpulseChannel = 1;
+            impulse.m_ImpulseDefinition.m_ImpulseShape = CinemachineImpulseDefinition.ImpulseShapes.Bump;
+            impulse.m_ImpulseDefinition.m_ImpulseType = CinemachineImpulseDefinition.ImpulseTypes.Uniform;
+            impulse.m_ImpulseDefinition.m_ImpulseDuration = 0.2f;
+            impulse.m_DefaultVelocity = new Vector3(0.15f, -0.5f, 0f);
+
+            CinemachineFreeLook explore = CreateFreeLook("CM_Explore", rigObject.transform, 50f,
+                new CinemachineFreeLook.Orbit(4.2f, 2.6f), new CinemachineFreeLook.Orbit(2f, 6f), new CinemachineFreeLook.Orbit(0.4f, 3.4f));
+            CinemachineFreeLook vehicle = CreateFreeLook("CM_Vehicle", rigObject.transform, 56f,
+                new CinemachineFreeLook.Orbit(6f, 4f), new CinemachineFreeLook.Orbit(3.2f, 9f), new CinemachineFreeLook.Orbit(1f, 5f));
+            vehicle.Priority = 5;
+
+            Transform pivot = new GameObject("LockOnPivot").transform;
+            pivot.SetParent(rigObject.transform);
+            CinemachineTargetGroup group = new GameObject("LockOnGroup").AddComponent<CinemachineTargetGroup>();
+            group.transform.SetParent(rigObject.transform);
+
+            GameObject lockOnObject = new GameObject("CM_LockOn");
+            lockOnObject.transform.SetParent(rigObject.transform);
+            CinemachineVirtualCamera lockOnCamera = lockOnObject.AddComponent<CinemachineVirtualCamera>();
+            lockOnCamera.Priority = 5;
+            lockOnCamera.m_Lens.FieldOfView = 52f;
+            lockOnCamera.Follow = pivot;
+            lockOnCamera.LookAt = group.transform;
+            CinemachineTransposer body = lockOnCamera.AddCinemachineComponent<CinemachineTransposer>();
+            body.m_BindingMode = CinemachineTransposer.BindingMode.LockToTargetNoRoll;
+            body.m_FollowOffset = new Vector3(1.2f, 3f, -7f);
+            CinemachineGroupComposer aim = lockOnCamera.AddCinemachineComponent<CinemachineGroupComposer>();
+            aim.m_GroupFramingSize = 0.6f;
+            AddCameraExtensions(lockOnObject);
+
+            SetPrivate(rig, "input", input);
+            SetPrivate(rig, "lockOn", lockOn);
+            SetPrivate(rig, "exploreCamera", explore);
+            SetPrivate(rig, "vehicleCamera", vehicle);
+            SetPrivate(rig, "lockOnCamera", lockOnCamera);
+            SetPrivate(rig, "lockOnGroup", group);
+            SetPrivate(rig, "lockOnPivot", pivot);
+            SetPrivate(rig, "impulseSource", impulse);
+            return rig;
         }
 
-        private static void CreateLighting()
+        private static CinemachineFreeLook CreateFreeLook(string name, Transform parent, float fov, CinemachineFreeLook.Orbit top, CinemachineFreeLook.Orbit middle, CinemachineFreeLook.Orbit bottom)
+        {
+            GameObject cameraObject = new GameObject(name);
+            cameraObject.transform.SetParent(parent);
+            CinemachineFreeLook freeLook = cameraObject.AddComponent<CinemachineFreeLook>();
+            freeLook.Priority = 10;
+            freeLook.m_Lens.FieldOfView = fov;
+            freeLook.m_BindingMode = CinemachineTransposer.BindingMode.WorldSpace;
+            freeLook.m_Orbits = new[] { top, middle, bottom };
+            freeLook.m_Transitions.m_InheritPosition = true;
+
+            // CameraRig feeds look input every frame (InputReader); gains are degrees / orbit fraction per unit.
+            ConfigureAxis(ref freeLook.m_XAxis, 3.2f);
+            ConfigureAxis(ref freeLook.m_YAxis, 0.035f);
+            freeLook.m_YAxis.Value = 0.5f;
+
+            AddCameraExtensions(cameraObject);
+            return freeLook;
+        }
+
+        private static void ConfigureAxis(ref AxisState axis, float gain)
+        {
+            axis.m_SpeedMode = AxisState.SpeedMode.InputValueGain;
+            axis.m_MaxSpeed = gain;
+            axis.m_AccelTime = 0f;
+            axis.m_DecelTime = 0f;
+            axis.m_InputAxisName = string.Empty;
+            axis.m_InvertInput = false;
+        }
+
+        private static void AddCameraExtensions(GameObject cameraObject)
+        {
+            CinemachineCollider collider = cameraObject.AddComponent<CinemachineCollider>();
+            collider.m_CollideAgainst = LayerMask.GetMask("Default", GameLayers.Environment);
+            collider.m_IgnoreTag = "Player";
+            collider.m_MinimumDistanceFromTarget = 0.6f;
+            collider.m_AvoidObstacles = true;
+            collider.m_CameraRadius = 0.25f;
+
+            CinemachineImpulseListener listener = cameraObject.AddComponent<CinemachineImpulseListener>();
+            listener.m_ChannelMask = 1;
+            listener.m_Gain = 1f;
+        }
+
+        internal static void CreateLighting()
         {
             GameObject sun = new GameObject("VirtualSun");
             Light light = sun.AddComponent<Light>();
@@ -249,6 +342,7 @@ namespace CodeLyokoFanGame.EditorTools
                 pillar.transform.position = pos;
                 pillar.transform.localScale = new Vector3(0.45f, 2.4f + (i % 3), 0.45f);
                 pillar.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? dark : cyan;
+                GameLayers.SetRecursively(pillar, GameLayers.Environment);
             }
 
             GameObject sea = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -259,13 +353,14 @@ namespace CodeLyokoFanGame.EditorTools
             Object.DestroyImmediate(sea.GetComponent<Collider>());
         }
 
-        private static GameObject CreatePlatform(string name, Vector3 position, Vector3 scale, Material material)
+        internal static GameObject CreatePlatform(string name, Vector3 position, Vector3 scale, Material material)
         {
             GameObject platform = GameObject.CreatePrimitive(PrimitiveType.Cube);
             platform.name = name;
             platform.transform.position = position;
             platform.transform.localScale = scale;
             platform.GetComponent<Renderer>().sharedMaterial = material;
+            GameLayers.SetRecursively(platform, GameLayers.Environment);
             return platform;
         }
 
@@ -283,6 +378,13 @@ namespace CodeLyokoFanGame.EditorTools
             Object.DestroyImmediate(marker.GetComponent<Collider>());
         }
 
+        private static void CreateMissionMarker(string name, string id, Vector3 position)
+        {
+            GameObject markerObject = new GameObject(name);
+            markerObject.transform.position = position;
+            markerObject.AddComponent<MissionMarker>().Configure(id, 6f);
+        }
+
         private static void CreateWaveSpawner(string name, Projectile enemyProjectile, Vector3 position)
         {
             GameObject spawnerObject = new GameObject(name);
@@ -293,7 +395,7 @@ namespace CodeLyokoFanGame.EditorTools
             spawner.AddWave(EnemyKind.Hornet, 2, 6f);
         }
 
-        private static PlayerController CreatePlayer(string name, LyokoCharacter id, AttackStyle style, VehicleStyle vehicleStyle, Material material, VehicleRig vehicle, Projectile projectile, CharacterSwitcher switcher, LockOnSystem lockOn, Vector3 position)
+        internal static PlayerController CreatePlayer(string name, LyokoCharacter id, AttackStyle style, VehicleStyle vehicleStyle, Material material, VehicleRig vehicle, Projectile projectile, CharacterSwitcher switcher, LockOnSystem lockOn, Vector3 position)
         {
             GameObject root = new GameObject(name);
             root.tag = "Player";
@@ -304,14 +406,24 @@ namespace CodeLyokoFanGame.EditorTools
             controller.center = Vector3.up;
             Health health = root.AddComponent<Health>();
             health.SetMaxHealth(100f);
-            SetPrivate(health, "destroyOnDeath", false);
+            health.SetDestroyOnDeath(false);
             PlayerCombat combat = root.AddComponent<PlayerCombat>();
             PlayerController player = root.AddComponent<PlayerController>();
 
             SetPrivate(player, "character", id);
             SetPrivate(player, "vehicleStyle", vehicleStyle);
             SetPrivate(player, "vehiclePrefab", vehicle);
+            SetPrivate(player, "definition", AssetDatabase.LoadAssetAtPath<CharacterDefinition>("Assets/Game/Data/Characters/" + id + ".asset"));
+            SetPrivate(player, "movement", PrototypeDataAssetBuilder.EnsureMovementProfile());
+
+            GameObject cameraTarget = new GameObject("CameraTarget");
+            cameraTarget.transform.SetParent(root.transform);
+            cameraTarget.transform.localPosition = new Vector3(0f, 1.4f, 0f);
             combat.Configure(style, projectile, lockOn);
+            CombatProfile combatProfile = PrototypeDataAssetBuilder.EnsureCombatProfile();
+            SetPrivate(combat, "profile", combatProfile);
+            root.AddComponent<SpecialMeter>();
+            root.AddComponent<PlayerGuard>().Configure(combatProfile);
 
             GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             body.name = "PrototypeBody";
@@ -329,6 +441,8 @@ namespace CodeLyokoFanGame.EditorTools
             visor.GetComponent<Renderer>().sharedMaterial = material;
             Object.DestroyImmediate(visor.GetComponent<Collider>());
 
+            root.AddComponent<DamageFlicker>();
+            GameLayers.SetRecursively(root, GameLayers.Player);
             return player;
         }
 
@@ -340,8 +454,12 @@ namespace CodeLyokoFanGame.EditorTools
             controller.height = 1.8f;
             controller.radius = 0.34f;
             controller.center = Vector3.up * 0.9f;
-            root.AddComponent<Health>().SetMaxHealth(100f);
+            Health aelitaHealth = root.AddComponent<Health>();
+            aelitaHealth.SetMaxHealth(100f);
+            aelitaHealth.SetDestroyOnDeath(false);
+            aelitaHealth.SetHitInvulnerability(0.5f);
             AelitaCompanion companion = root.AddComponent<AelitaCompanion>();
+            GameLayers.SetRecursively(root, GameLayers.Player);
             SetPrivate(companion, "switcher", switcher);
 
             GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -366,6 +484,7 @@ namespace CodeLyokoFanGame.EditorTools
             cylinder.transform.localPosition = Vector3.zero;
             cylinder.transform.localScale = new Vector3(2.8f, 3f, 2.8f);
             cylinder.GetComponent<Renderer>().sharedMaterial = red;
+            GameLayers.SetRecursively(cylinder, GameLayers.Environment);
 
             GameObject ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             ring.name = "TowerHalo";
@@ -380,7 +499,7 @@ namespace CodeLyokoFanGame.EditorTools
             return tower;
         }
 
-        private static EnemyAI CreateEnemy(string name, EnemyKind kind, Material bodyMaterial, Material eyeMaterial, Projectile projectile, Vector3 position)
+        internal static EnemyAI CreateEnemy(string name, EnemyKind kind, Material bodyMaterial, Material eyeMaterial, Projectile projectile, Vector3 position)
         {
             GameObject root = new GameObject(name);
             root.tag = "Enemy";
@@ -409,7 +528,9 @@ namespace CodeLyokoFanGame.EditorTools
             eye.name = "XanaEyeWeakPoint";
             eye.tag = "Enemy";
             eye.transform.SetParent(root.transform);
-            eye.transform.localPosition = new Vector3(0f, 1.15f, -0.72f);
+            Vector3 bodyScale = EnemyScale(kind);
+            float front = bodyScale.z * 0.5f + 0.1f;
+            eye.transform.localPosition = new Vector3(0f, kind == EnemyKind.Megatank ? 1f : 1.15f, front);
             eye.transform.localScale = Vector3.one * (kind == EnemyKind.Megatank ? 0.62f : 0.34f);
             eye.GetComponent<Renderer>().sharedMaterial = eyeMaterial;
             eye.GetComponent<Collider>().isTrigger = true;
@@ -417,7 +538,7 @@ namespace CodeLyokoFanGame.EditorTools
 
             GameObject firePoint = new GameObject("FirePoint");
             firePoint.transform.SetParent(root.transform);
-            firePoint.transform.localPosition = new Vector3(0f, 1.2f, -1f);
+            firePoint.transform.localPosition = new Vector3(0f, 1.2f, front + 0.3f);
             SetPrivate(ai, "firePoint", firePoint.transform);
             SetPrivate(ai, "aimPoint", eye.transform);
 
@@ -436,6 +557,7 @@ namespace CodeLyokoFanGame.EditorTools
                 }
             }
 
+            GameLayers.SetRecursively(root, GameLayers.Enemy);
             return ai;
         }
 
@@ -456,14 +578,17 @@ namespace CodeLyokoFanGame.EditorTools
             }
         }
 
-        private static void SetPrivate<T>(Object target, string fieldName, T value)
+        internal static void SetPrivate<T>(Object target, string fieldName, T value)
         {
             System.Reflection.FieldInfo field = target.GetType().GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null)
+            if (field == null)
             {
-                field.SetValue(target, value);
-                EditorUtility.SetDirty(target);
+                Debug.LogError("Field not found: " + target.GetType().Name + "." + fieldName);
+                return;
             }
+
+            field.SetValue(target, value);
+            EditorUtility.SetDirty(target);
         }
     }
 }

@@ -1,0 +1,24 @@
+using UnityEditor;
+using UnityEngine;
+
+namespace CodeLyokoFanGame.EditorTools
+{
+    public static class ProjectRebuild
+    {
+        // Runs every generator in dependency order. Also usable from the command line with -executeMethod.
+        [MenuItem("Tools/Code Lyoko Fan Game/Rebuild Everything", priority = 0)]
+        public static void RebuildEverything()
+        {
+            UrpPipelineSetup.EnsurePipeline();
+            PhysicsLayersSetup.EnsureLayers();
+            CoreAssetsBuilder.CreateCoreAssets();
+            PrototypeDataAssetBuilder.CreatePrototypeDataAssets();
+            FullRosterPlaceholderBuilder.CreateFullRosterPlaceholders();
+            BootSceneBuilder.BuildBootScene();
+            MovementGymBuilder.BuildMovementGym();
+            CombatArenaBuilder.BuildCombatArena();
+            CodeLyokoSceneBuilder.BuildScene();
+            Debug.Log("Rebuild Everything finished.");
+        }
+    }
+}

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2991f1c69ddc167419d104bca5a2fb5e, type: 3}
+  m_Name: ulrich_triangulate
+  m_EditorClassIdentifier: 
+  abilityId: ulrich_triangulate
+  displayName: Triangular
+  owner: 1
+  description: 'Supersprint con los clones activos: rodean al objetivo y el golpe
+    del Ulrich real es critico.'
+  icon: {fileID: 0}
+  slot: 3
+  kind: 2
+  cooldown: 0
+  resource: 0
+  cost: 0
+  duration: 0
+  power: 1
+  effectPrefab: {fileID: 0}
+  unlockChapter: 1
+  canon: 1

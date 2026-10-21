@@ -10,6 +10,9 @@ namespace CodeLyokoFanGame
         [SerializeField] private float moveSpeed = 5.2f;
         [SerializeField] private float shieldRadius = 5f;
         [SerializeField] private float shieldCooldown = 8f;
+        [Tooltip("Aelita never walks off a ledge: she waits until there is ground ahead (the Digital Sea is fatal).")]
+        [SerializeField] private float edgeCheckDistance = 0.6f;
+        [SerializeField] private float edgeDropHeight = 1.5f;
 
         private CharacterController controller;
         private float shieldTimer;
@@ -29,6 +32,10 @@ namespace CodeLyokoFanGame
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
+            if (TryGetComponent(out Health health))
+            {
+                health.SetTeam(Team.Player);
+            }
         }
 
         private void Update()
@@ -44,7 +51,7 @@ namespace CodeLyokoFanGame
             Vector3 toTarget = target.position - transform.position;
             Vector3 flat = Vector3.ProjectOnPlane(toTarget, Vector3.up);
 
-            if (flat.magnitude > followDistance)
+            if (flat.magnitude > followDistance && HasGroundAhead(flat.normalized))
             {
                 controller.Move(flat.normalized * moveSpeed * Time.deltaTime);
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(flat.normalized), Time.deltaTime * 8f);
@@ -54,22 +61,18 @@ namespace CodeLyokoFanGame
 
             if (shieldTimer <= 0f)
             {
-                Collider[] enemies = Physics.OverlapSphere(transform.position, shieldRadius);
-                for (int i = 0; i < enemies.Length; i++)
-                {
-                    EnemyAI enemy = enemies[i].GetComponentInParent<EnemyAI>();
-                    if (enemy != null)
-                    {
-                        Health health = enemy.GetComponent<Health>();
-                        if (health != null)
-                        {
-                            health.TakeDamage(10f, gameObject);
-                        }
-                    }
-                }
+                Collider[] nearby = Physics.OverlapSphere(transform.position, shieldRadius, Physics.AllLayers, QueryTriggerInteraction.Collide);
+                DamageInfo pulse = new DamageInfo { amount = 10f, type = DamageType.Ability, source = gameObject, sourceTeam = Team.Player };
+                HitResolver.ApplyToColliders(nearby, nearby.Length, pulse, Team.Player, null, false);
 
                 shieldTimer = shieldCooldown;
             }
+        }
+
+        private bool HasGroundAhead(Vector3 direction)
+        {
+            Vector3 probe = transform.position + direction * (controller.radius + edgeCheckDistance) + Vector3.up * 0.5f;
+            return Physics.Raycast(probe, Vector3.down, edgeDropHeight + 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         }
     }
 }

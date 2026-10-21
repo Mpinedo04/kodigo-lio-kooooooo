@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1967580200720327990}
   - component: {fileID: 4688886311899301937}
   - component: {fileID: 7974088733138010306}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: PlayerEnergyDart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,7 +147,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 24
-  damage: 15
   lifeTime: 3
-  hostileToPlayer: 0
+  gravity: 0
   impactPrefab: {fileID: 0}
