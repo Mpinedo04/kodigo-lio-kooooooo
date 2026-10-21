@@ -668,6 +668,8 @@ Controles actuales del prototipo ([Hecho]) más los que faltan ([Pendiente]):
 
 Orden recomendado para no perderse. Cada hito debe funcionar y quedar guardado en git antes de pasar al siguiente.
 
+> El desglose completo, tarea por tarea, está en [`Fases/00_INDICE.md`](Fases/00_INDICE.md) (27 fases, de la F00 a la F26, un archivo por fase).
+
 | Hito | Contenido | Depende de |
 | --- | --- | --- |
 | **H0 – Recuperar el proyecto** | Abrir en Unity, compilar, generar escena y prefabs. Seguir `Docs/UNITY_FIRST_OPEN_CHECKLIST.md` | — |

@@ -38,6 +38,7 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 - Prefabs placeholder generables para el roster principal completo.
 - Documentos de diseno y modelado en `Docs/`.
 - Biblia completa del juego (historia, personajes, habilidades, enemigos, mapas y plan) en `Docs/BIBLIA_DEL_JUEGO.md`.
+- Fases de desarrollo (un archivo por fase, con tareas marcables) en `Docs/Fases/`; empieza por `Docs/Fases/00_INDICE.md`.
 
 ## Siguiente paso sin perderse
 
