@@ -60,7 +60,7 @@ Todo está en el namespace `CodeLyokoFanGame` (`.Data` para las definiciones).
 | `GameEnums.cs` | Enums: personajes, estilos de ataque, vehículos, tipos y comportamientos de enemigos, fases de misión |
 | `Data/*Definition.cs`, `Data/RosterDatabase.cs` | ScriptableObjects con los valores de personajes, enemigos y vehículos |
 
-Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **Tools > Code Lyoko Fan Game**: `Create Prototype Data Assets`, `Create Full Roster Placeholder Prefabs` y `Build Vertical Slice Scene`. La escena y los prefabs **no están en git** hasta que se cierre la F01; se generan con esos menús.
+Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **Tools > Code Lyoko Fan Game**: `Setup URP Pipeline` (crea y asigna el asset de URP en `Assets/Settings/`), `Create Prototype Data Assets`, `Create Full Roster Placeholder Prefabs` y `Build Vertical Slice Scene`. La escena y los prefabs **no están en git** hasta que se cierre la F01; se generan con esos menús.
 
 ## Unity: reglas para no romper el proyecto
 
@@ -76,7 +76,15 @@ Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **T
 - **El código de editor** (`using UnityEditor`) solo puede ir en carpetas `Editor/`; si no, la build falla.
 - **Renombrar un campo `[SerializeField]`** borra el valor guardado en escenas y prefabs. Usa `[FormerlySerializedAs("nombreViejo")]`.
 - Los valores ajustables van en ScriptableObjects, nunca escritos fijos en el código (ver `00_REGLAS.md`).
-- La vida canon es **100 PV** (el código aún usa 120 por defecto; se corrige en la F1.9).
+- La vida canon de los guerreros es **100 PV**.
+- En git no hay `.meta` ni casi nada de `ProjectSettings/` hasta cerrar la F01: Unity los crea al abrir el proyecto por primera vez.
+
+## Subagentes
+
+- **Máximo 2 subagentes a la vez.**
+- Hasta terminar la F03, mejor ninguno: las fases van en cadena y tocan los mismos scripts.
+- Dos subagentes que escriben código no pueden tocar los mismos archivos. Ejemplo válido después de la F04: uno en F05 (`Abilities/`) y otro en F06 (`Enemies/`).
+- Para tareas de solo lectura (buscar en el código o en los docs) sí se pueden usar sin esperar a la F03, pero también con un máximo de 2.
 
 ## Canon y aspectos legales
 

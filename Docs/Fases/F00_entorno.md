@@ -10,13 +10,13 @@
 **Tareas**
 
 - [ ] **F0.1** Instalar **Unity Hub** y **Unity 2022.3.56f1** con los módulos *Windows Build Support (IL2CPP)* y *Visual Studio Community*.
-- [ ] **F0.2** Instalar **Visual Studio 2022** (o VS Code + extensión de C# y Unity) y comprobar que el autocompletado funciona con el proyecto abierto.
+- [ ] **F0.2** Instalar **Visual Studio 2022 Community** (lo más sencillo: marcarlo como módulo al instalar Unity en F0.1; Cursor/VS Code también sirve, pero con peor soporte de Unity) y comprobar que el autocompletado funciona con el proyecto abierto.
 - [ ] **F0.3** Instalar **Blender** (versión LTS actual) para modelos.
-- [ ] **F0.4** Instalar **Git LFS** (`git lfs install`) y crear `.gitattributes` con:
-  - `*.fbx`, `*.blend`, `*.png`, `*.psd`, `*.tga`, `*.wav`, `*.mp3`, `*.ogg`, `*.exr`, `*.anim`(si son grandes) → LFS.
-- [ ] **F0.5** Revisar `.gitignore`: que ignore `Library/`, `Temp/`, `Obj/`, `Logs/`, `UserSettings/`, `Build/`, `*.csproj`, `*.sln`.
-- [ ] **F0.6** En Unity: `Edit > Project Settings > Editor` → *Asset Serialization: Force Text* y *Version Control: Visible Meta Files*.
-- [ ] **F0.7** Crear un tablero de tareas (GitHub Projects o issues) usando las plantillas que ya hay en `.github/ISSUE_TEMPLATE/`.
+- [x] **F0.4** Instalar **Git LFS** (`git lfs install`) y crear `.gitattributes`: modelos, texturas, audio, vídeo y fuentes van por LFS; los YAML de Unity (`.unity`, `.prefab`, `.asset`, `.meta`…) como texto.
+  - Hecho en este PC. En cada PC nuevo hay que ejecutar `git lfs install` una vez.
+- [x] **F0.5** Revisar `.gitignore`: que ignore `Library/`, `Temp/`, `Obj/`, `Logs/`, `UserSettings/`, `Build/`, `*.csproj`, `*.sln`. Añadidos también IDEs (`.idea/`), `BuildLogs/` y archivos del sistema.
+- [ ] **F0.6** En Unity: `Edit > Project Settings > Editor` → comprobar *Asset Serialization: Force Text* y *Version Control: Visible Meta Files* (en 2022.3 ya vienen así por defecto; solo hay que mirarlo).
+- [x] **F0.7** Tablero de tareas: se usan las casillas de `Docs/Fases/` y el estado de `00_INDICE.md`. Las plantillas de `.github/ISSUE_TEMPLATE/` quedan para reportar errores de Unity y tareas de assets.
 - [ ] **F0.8** (Opcional) Instalar un editor de audio (**Audacity**) y de imagen (**Krita** o **GIMP**).
 
 **Archivos:** `.gitattributes` (nuevo), `.gitignore` (revisar).

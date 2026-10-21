@@ -20,6 +20,7 @@ namespace CodeLyokoFanGame.EditorTools
             Directory.CreateDirectory(EnemyFolder);
             Directory.CreateDirectory(VehicleFolder);
             Directory.CreateDirectory(MaterialFolder);
+            UrpPipelineSetup.EnsurePipeline();
             EnsureTag("Enemy");
 
             Material purple = Material("OddPurple", new Color(0.48f, 0.16f, 0.95f), 0.4f);

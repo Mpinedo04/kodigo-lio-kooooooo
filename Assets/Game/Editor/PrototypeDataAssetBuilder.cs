@@ -14,13 +14,13 @@ namespace CodeLyokoFanGame.EditorTools
         {
             Directory.CreateDirectory(DataFolder);
 
-            CharacterDefinition odd = Character("Odd", LyokoCharacter.Odd, AttackStyle.Ranged, VehicleStyle.Overboard, 120f, 7.8f, 11f, 18f, 32f, true, "Fast ranged fighter. Uses laser arrows and the Overboard.");
-            CharacterDefinition ulrich = Character("Ulrich", LyokoCharacter.Ulrich, AttackStyle.Melee, VehicleStyle.Overbike, 140f, 7.2f, 10.5f, 24f, 42f, true, "Close-range katana fighter. Uses speed, dash and the Overbike.");
-            CharacterDefinition yumi = Character("Yumi", LyokoCharacter.Yumi, AttackStyle.Telekinetic, VehicleStyle.Overwing, 130f, 7f, 10f, 20f, 38f, true, "Balanced fighter with tessen fans and light telekinesis. Uses the Overwing.");
+            CharacterDefinition odd = Character("Odd", LyokoCharacter.Odd, AttackStyle.Ranged, VehicleStyle.Overboard, 100f, 7.8f, 11f, 18f, 32f, true, "Fast ranged fighter. Uses laser arrows and the Overboard.");
+            CharacterDefinition ulrich = Character("Ulrich", LyokoCharacter.Ulrich, AttackStyle.Melee, VehicleStyle.Overbike, 100f, 7.2f, 10.5f, 24f, 42f, true, "Close-range katana fighter. Uses speed, dash and the Overbike.");
+            CharacterDefinition yumi = Character("Yumi", LyokoCharacter.Yumi, AttackStyle.Telekinetic, VehicleStyle.Overwing, 100f, 7f, 10f, 20f, 38f, true, "Balanced fighter with tessen fans and light telekinesis. Uses the Overwing.");
             CharacterDefinition aelita = Character("Aelita", LyokoCharacter.Aelita, AttackStyle.Ranged, VehicleStyle.Overwing, 100f, 6.6f, 9.2f, 12f, 24f, false, "Tower key character. Uses creativity, shields and Code: LYOKO interactions.");
-            CharacterDefinition jeremie = Character("Jeremie", LyokoCharacter.Jeremie, AttackStyle.Operator, VehicleStyle.None, 90f, 5.8f, 7.2f, 4f, 10f, false, "Operator character. Runs mission support, scanners and tower guidance from the lab.");
+            CharacterDefinition jeremie = Character("Jeremie", LyokoCharacter.Jeremie, AttackStyle.Operator, VehicleStyle.None, 100f, 5.8f, 7.2f, 4f, 10f, false, "Operator character. Runs mission support, scanners and tower guidance from the lab.");
             jeremie.operatorOnly = true;
-            CharacterDefinition william = Character("William", LyokoCharacter.William, AttackStyle.Melee, VehicleStyle.BlackManta, 160f, 7.1f, 10.2f, 28f, 48f, false, "Heavy sword fighter. Can become playable after story progression.");
+            CharacterDefinition william = Character("William", LyokoCharacter.William, AttackStyle.Melee, VehicleStyle.BlackManta, 100f, 7.1f, 10.2f, 28f, 48f, false, "Heavy sword fighter. Can become playable after story progression.");
             CharacterDefinition xanaWilliam = Character("XanaWilliam", LyokoCharacter.XanaWilliam, AttackStyle.Melee, VehicleStyle.BlackManta, 280f, 7.4f, 10.8f, 34f, 58f, false, "X.A.N.A.-controlled William rival/boss form.");
 
             EnemyDefinition kankrelat = Enemy("Kankrelat", EnemyKind.Kankrelat, EnemyBehaviorStyle.SwarmShooter, 60f, 22f, 15f, 3.8f, 9f, 0.95f, false, false, true, "Weak swarmer. Small and fast, best used in groups.");

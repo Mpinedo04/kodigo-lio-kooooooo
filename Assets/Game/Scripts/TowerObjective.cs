@@ -5,7 +5,7 @@ namespace CodeLyokoFanGame
     public sealed class TowerObjective : MonoBehaviour
     {
         [SerializeField] private AelitaCompanion aelita;
-        [SerializeField] private float requiredAelitaDistance = 5f;
+        [SerializeField] private float requiredAelitaDistance = 6f;
         [SerializeField] private float activationSeconds = 4f;
         [SerializeField] private Renderer towerRenderer;
         [SerializeField] private Color activeColor = new Color(1f, 0.1f, 0.1f, 1f);

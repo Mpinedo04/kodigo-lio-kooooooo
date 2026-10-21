@@ -24,6 +24,7 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 - `V`: montar/desmontar vehiculo
 - `1`, `2`, `3`: cambiar entre Odd, Ulrich y Yumi
 - `E`: interactuar con la torre cuando Aelita este cerca
+- `R`: reintentar la mision cuando todos estan devirtualizados
 
 ## Contenido implementado
 

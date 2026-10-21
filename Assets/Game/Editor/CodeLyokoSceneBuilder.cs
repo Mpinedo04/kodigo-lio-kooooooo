@@ -19,6 +19,7 @@ namespace CodeLyokoFanGame.EditorTools
         public static void BuildScene()
         {
             EnsureFolders();
+            UrpPipelineSetup.EnsurePipeline();
             EnsureTag("Player");
             EnsureTag("Enemy");
 
@@ -87,6 +88,7 @@ namespace CodeLyokoFanGame.EditorTools
             SetPrivate(mission, "switcher", switcher);
             missionDirector.SetTower(tower);
             missionDirector.SetAelita(aelita);
+            missionDirector.SetSwitcher(switcher);
             SetPrivate(missionDirector, "bridgeMarker", bridgeMarker);
             SetPrivate(missionDirector, "towerMarker", towerMarker);
             hud.Configure(switcher, missionDirector, tower, aelita);
@@ -300,7 +302,9 @@ namespace CodeLyokoFanGame.EditorTools
             controller.height = 2f;
             controller.radius = 0.38f;
             controller.center = Vector3.up;
-            root.AddComponent<Health>().SetMaxHealth(130f);
+            Health health = root.AddComponent<Health>();
+            health.SetMaxHealth(100f);
+            SetPrivate(health, "destroyOnDeath", false);
             PlayerCombat combat = root.AddComponent<PlayerCombat>();
             PlayerController player = root.AddComponent<PlayerController>();
 

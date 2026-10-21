@@ -13,6 +13,22 @@ namespace CodeLyokoFanGame
 
         public PlayerController ActiveCharacter => characters.Count == 0 ? null : characters[activeIndex];
 
+        public bool HasAliveCharacter
+        {
+            get
+            {
+                for (int i = 0; i < characters.Count; i++)
+                {
+                    if (IsAlive(i))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public void Register(PlayerController controller)
         {
             if (!characters.Contains(controller))
@@ -36,11 +52,17 @@ namespace CodeLyokoFanGame
             if (Input.GetKeyDown(KeyCode.Alpha1)) Activate(0);
             if (Input.GetKeyDown(KeyCode.Alpha2)) Activate(1);
             if (Input.GetKeyDown(KeyCode.Alpha3)) Activate(2);
+
+            // A devirtualized warrior hands control to the next one still in Lyoko.
+            if (characters.Count > 0 && !IsAlive(activeIndex))
+            {
+                ActivateNextAlive();
+            }
         }
 
         public void Activate(int index)
         {
-            if (index < 0 || index >= characters.Count)
+            if (index < 0 || index >= characters.Count || !IsAlive(index))
             {
                 return;
             }
@@ -52,6 +74,11 @@ namespace CodeLyokoFanGame
 
             for (int i = 0; i < characters.Count; i++)
             {
+                if (!IsAlive(i))
+                {
+                    continue;
+                }
+
                 characters[i].transform.position = handoffPosition;
                 characters[i].transform.rotation = handoffRotation;
                 characters[i].SetControlActive(i == activeIndex);
@@ -66,6 +93,31 @@ namespace CodeLyokoFanGame
             {
                 lockOnSystem.SetOwner(characters[activeIndex].transform);
             }
+        }
+
+        private void ActivateNextAlive()
+        {
+            for (int offset = 1; offset <= characters.Count; offset++)
+            {
+                int index = (activeIndex + offset) % characters.Count;
+                if (IsAlive(index))
+                {
+                    Activate(index);
+                    return;
+                }
+            }
+        }
+
+        private bool IsAlive(int index)
+        {
+            PlayerController character = characters[index];
+            if (character == null)
+            {
+                return false;
+            }
+
+            Health health = character.GetComponent<Health>();
+            return health == null || !health.IsDead;
         }
     }
 }

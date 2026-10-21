@@ -16,7 +16,14 @@ namespace CodeLyokoFanGame
 
         public bool IsNearTower(TowerObjective tower)
         {
-            return tower != null && Vector3.Distance(transform.position, tower.transform.position) <= tower.RequiredAelitaDistance;
+            if (tower == null)
+            {
+                return false;
+            }
+
+            // Horizontal distance only: the tower pivot sits above the ground.
+            Vector3 flat = Vector3.ProjectOnPlane(tower.transform.position - transform.position, Vector3.up);
+            return flat.magnitude <= tower.RequiredAelitaDistance;
         }
 
         private void Awake()

@@ -16,7 +16,7 @@ namespace CodeLyokoFanGame.Data
         public bool playable = true;
         public bool companion;
         public bool operatorOnly;
-        public float maxHealth = 120f;
+        public float maxHealth = 100f;
         public float walkSpeed = 7f;
         public float sprintSpeed = 10f;
         public float jumpForce = 8f;

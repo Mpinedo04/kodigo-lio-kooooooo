@@ -23,3 +23,22 @@ sysinfo.txt
 *.apk
 *.aab
 *.unitypackage
+
+# IDEs
+.idea/
+*.suo
+*.tmp
+
+# Unity extras
+[Mm]emoryCaptures/
+[Bb]uild[Ll]ogs/
+/[Aa]ssets/AssetStoreTools*
+crashlytics-build.properties
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

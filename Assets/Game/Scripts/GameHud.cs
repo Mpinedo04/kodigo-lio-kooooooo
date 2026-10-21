@@ -23,7 +23,7 @@ namespace CodeLyokoFanGame
         private void OnGUI()
         {
             EnsureStyles();
-            GUILayout.BeginArea(new Rect(18, Screen.height - 150, 560, 132), panelStyle);
+            GUILayout.BeginArea(new Rect(18, Screen.height - 178, 560, 160), panelStyle);
             GUILayout.Label("Lyoko HUD", titleStyle);
 
             PlayerController player = switcher != null ? switcher.ActiveCharacter : null;
@@ -42,6 +42,11 @@ namespace CodeLyokoFanGame
             if (missionDirector != null)
             {
                 GUILayout.Label("Objetivo: " + missionDirector.CurrentObjectiveText);
+
+                if (missionDirector.Phase == MissionPhase.ClearCombatPlateau || missionDirector.Phase == MissionPhase.DefeatBoss)
+                {
+                    GUILayout.Label("Enemigos restantes: " + missionDirector.RemainingEnemies);
+                }
             }
 
             if (tower != null)

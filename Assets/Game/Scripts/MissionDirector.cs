@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CodeLyokoFanGame
 {
@@ -6,15 +7,33 @@ namespace CodeLyokoFanGame
     {
         [SerializeField] private TowerObjective tower;
         [SerializeField] private AelitaCompanion aelita;
+        [SerializeField] private CharacterSwitcher switcher;
         [SerializeField] private Transform bridgeMarker;
         [SerializeField] private Transform towerMarker;
         [SerializeField] private float markerReachedDistance = 6f;
 
         public MissionPhase Phase { get; private set; } = MissionPhase.Intro;
         public string CurrentObjectiveText { get; private set; } = "Jeremie: X.A.N.A. ha activado una torre. Entrad en Lyoko.";
+        public int RemainingEnemies { get; private set; }
 
         private void Update()
         {
+            if (Phase == MissionPhase.Failed)
+            {
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
+
+                return;
+            }
+
+            if (Phase != MissionPhase.Complete && switcher != null && !switcher.HasAliveCharacter)
+            {
+                SetPhase(MissionPhase.Failed, "Todos devirtualizados. Pulsa R para reintentar.");
+                return;
+            }
+
             GameObject player = GetActivePlayer();
             if (player == null)
             {
@@ -33,7 +52,8 @@ namespace CodeLyokoFanGame
                     }
                     break;
                 case MissionPhase.ClearCombatPlateau:
-                    if (CountEnemies() <= 1)
+                    RemainingEnemies = CountEnemies();
+                    if (RemainingEnemies <= 1)
                     {
                         SetPhase(MissionPhase.EscortAelita, "Escolta a Aelita hasta la torre activada.");
                     }
@@ -45,7 +65,8 @@ namespace CodeLyokoFanGame
                     }
                     break;
                 case MissionPhase.DefeatBoss:
-                    if (CountEnemies() == 0)
+                    RemainingEnemies = CountEnemies();
+                    if (RemainingEnemies == 0)
                     {
                         SetPhase(MissionPhase.DeactivateTower, "Manten E cerca de la torre para introducir CODE: LYOKO.");
                     }
@@ -67,6 +88,11 @@ namespace CodeLyokoFanGame
         public void SetAelita(AelitaCompanion companion)
         {
             aelita = companion;
+        }
+
+        public void SetSwitcher(CharacterSwitcher characterSwitcher)
+        {
+            switcher = characterSwitcher;
         }
 
         private void SetPhase(MissionPhase phase, string objective)
