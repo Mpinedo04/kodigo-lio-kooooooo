@@ -60,14 +60,17 @@ Todo está en el namespace `CodeLyokoFanGame` (`.Data` para las definiciones).
 | `GameEnums.cs` | Enums: personajes, estilos de ataque, vehículos, tipos y comportamientos de enemigos, fases de misión |
 | `Data/*Definition.cs`, `Data/RosterDatabase.cs` | ScriptableObjects con los valores de personajes, enemigos y vehículos |
 
-Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **Tools > Code Lyoko Fan Game**: `Setup URP Pipeline` (crea y asigna el asset de URP en `Assets/Settings/`), `Create Prototype Data Assets`, `Create Full Roster Placeholder Prefabs` y `Build Vertical Slice Scene`. La escena y los prefabs **no están en git** hasta que se cierre la F01; se generan con esos menús.
+Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **Tools > Code Lyoko Fan Game**: `Setup URP Pipeline` (crea y asigna el asset de URP en `Assets/Settings/`), `Create Prototype Data Assets`, `Create Full Roster Placeholder Prefabs` y `Build Vertical Slice Scene`. La escena (`Assets/Levels/ForestSectorVerticalSlice.unity`), los datos (`Assets/Game/Data/`), los prefabs (`Assets/Game/Generated/`) y la configuración de URP (`Assets/Settings/`) ya están generados y guardados en git. Si cambias un generador, vuelve a ejecutarlo y haz commit de lo que genere.
 
 ## Unity: reglas para no romper el proyecto
 
-- **En este PC no hay Unity instalado.** No puedes compilar ni ejecutar el juego: el usuario lo prueba en otro PC y te pega los errores. Por eso:
-  - Escribe C# que compile a la primera: revisa los `using`, los tipos y las firmas antes de terminar.
-  - Al acabar, explica **qué probar en Unity** y qué debería verse.
-  - Si te pega errores, arregla siempre **el primero** de la consola, porque suele causar los demás.
+- **Unity 2022.3.56f1 está instalado en este PC** (`C:\Program Files\Unity\Hub\Editor\2022.3.56f1\Editor\Unity.exe`) y se puede usar desde la línea de comandos (modo batch). Guarda los logs en el scratchpad, nunca dentro del repo:
+  - **Compilar y comprobar errores:** `Unity.exe -batchmode -quit -projectPath "<repo>" -logFile <log>`, y luego busca `error CS` en el log.
+  - **Ejecutar un generador o cualquier método estático de editor:** añade `-executeMethod CodeLyokoFanGame.EditorTools.<Clase>.<Método>`.
+  - **Prueba de humo:** `-buildWindows64Player <scratchpad>/build/CodeLyoko.exe`, ejecuta el `.exe` con `-batchmode -nographics -logFile <log>` durante unos 60 s y busca `Exception`, `[Mission]` y `[Lyoko]` en el log. Así se ve si la partida arranca y avanza sin errores, aunque nadie juegue.
+  - **Si el usuario tiene el proyecto abierto en el Editor, el modo batch falla** (el proyecto queda bloqueado). Pídele que cierre Unity antes.
+  - Lo que no puedes hacer es **jugar**: al terminar, explica qué tiene que probar el usuario con teclado y ratón y qué debería ver.
+  - Si te pega errores de la consola, arregla siempre **el primero**, porque suele causar los demás.
 - **Versión 2022.3.** No uses API de Unity 6 / 2023+: nada de `Rigidbody.linearVelocity` (usa `velocity`) ni `Awaitable`. Si dudas de si una API existe en 2022.3, usa la alternativa clásica.
 - **Entrada:** hasta que se termine la F02, el proyecto usa el sistema antiguo (`Input.GetKey`, `Input.GetAxis`). Tras la F02 se usa el Input System con `InputReader`, y entonces no hay que volver a usar `Input.*`.
 - **Archivos `.meta`:** cada asset tiene un `.meta` con su GUID. No los borres ni los inventes. Si mueves o renombras un asset, mueve también su `.meta` (o mejor, pide al usuario que lo haga desde el Editor). Unity crea los `.meta` de los scripts nuevos al abrir el proyecto; hay que hacerles commit.
@@ -77,7 +80,7 @@ Los scripts de editor (`Assets/Game/Editor/`) crean contenido desde el menú **T
 - **Renombrar un campo `[SerializeField]`** borra el valor guardado en escenas y prefabs. Usa `[FormerlySerializedAs("nombreViejo")]`.
 - Los valores ajustables van en ScriptableObjects, nunca escritos fijos en el código (ver `00_REGLAS.md`).
 - La vida canon de los guerreros es **100 PV**.
-- En git no hay `.meta` ni casi nada de `ProjectSettings/` hasta cerrar la F01: Unity los crea al abrir el proyecto por primera vez.
+- Cuando crees un script o asset nuevo, ejecuta Unity en modo batch para que genere su `.meta`, y haz commit de los dos juntos.
 
 ## Subagentes
 

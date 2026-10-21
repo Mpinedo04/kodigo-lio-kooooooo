@@ -4,7 +4,7 @@ Proyecto Unity no comercial para prototipar una aventura 3D en tercera persona i
 
 ## Abrir y generar la escena
 
-1. Abre esta carpeta con Unity Hub usando Unity 2022.3 LTS o superior.
+1. Abre esta carpeta con Unity Hub usando exactamente Unity 2022.3.56f1 (no una version mas nueva).
 2. Espera a que Unity importe URP y compile scripts.
 3. En el menu superior usa `Tools > Code Lyoko Fan Game > Build Vertical Slice Scene`.
 4. Usa tambien `Tools > Code Lyoko Fan Game > Create Prototype Data Assets` para generar fichas editables de personajes, enemigos y vehiculos.

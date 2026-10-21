@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1730b0176cc3674aacfb846cfd32f99, type: 3}
+  m_Name: Skidbladnir
+  m_EditorClassIdentifier: 
+  style: 4
+  displayName: Skidbladnir
+  defaultRider: 3
+  canonNotes: Team submarine for the Digital Sea.
+  speedMultiplier: 1.25
+  acceleration: 18
+  turnSharpness: 10
+  hoverBob: 0.08
+  hoverRate: 5
+  canFly: 1
+  canCarryPassenger: 1
+  digitalSeaVehicle: 1
+  appearsInVerticalSlice: 0
+  prototypePrefab: {fileID: 0}
+  finalModelPrefab: {fileID: 0}
+  modelStatus: Placeholder
+  animationStatus: Not started
+  sfxStatus: Not started
+  sourceAssetId: 

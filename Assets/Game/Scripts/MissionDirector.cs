@@ -99,6 +99,7 @@ namespace CodeLyokoFanGame
         {
             Phase = phase;
             CurrentObjectiveText = objective;
+            Debug.Log("[Mission] " + phase + ": " + objective);
         }
 
         private static GameObject GetActivePlayer()

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b5c4b0724b176d4cbbe9b838b71b7cc, type: 3}
+  m_Name: Creeper
+  m_EditorClassIdentifier: 
+  kind: 6
+  displayName: Creeper
+  canonNotes: Sector 5 snake-like ambusher. Dangerous in close range.
+  behaviorStyle: 6
+  maxHealth: 75
+  detectionRange: 22
+  attackRange: 12
+  moveSpeed: 5.2
+  projectileDamage: 18
+  fireCooldown: 1
+  specialCooldown: 4
+  hoverHeight: 0
+  contactDamage: 32
+  flying: 0
+  boss: 0
+  digitalSeaOnly: 0
+  weakPointNotes: Eye of X.A.N.A.
+  weakPointDamageMultiplier: 2.5
+  weakPointAlwaysExposed: 1
+  appearsInVerticalSlice: 0
+  prototypePrefab: {fileID: 0}
+  finalModelPrefab: {fileID: 0}
+  modelStatus: Placeholder
+  animationStatus: Not started
+  vfxStatus: Not started
+  sourceAssetId: 

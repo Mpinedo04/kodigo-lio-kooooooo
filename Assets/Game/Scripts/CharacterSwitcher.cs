@@ -10,6 +10,7 @@ namespace CodeLyokoFanGame
         [SerializeField] private LockOnSystem lockOnSystem;
 
         private int activeIndex;
+        private int handledDevirtualizedIndex = -1;
 
         public PlayerController ActiveCharacter => characters.Count == 0 ? null : characters[activeIndex];
 
@@ -54,8 +55,10 @@ namespace CodeLyokoFanGame
             if (Input.GetKeyDown(KeyCode.Alpha3)) Activate(2);
 
             // A devirtualized warrior hands control to the next one still in Lyoko.
-            if (characters.Count > 0 && !IsAlive(activeIndex))
+            if (characters.Count > 0 && activeIndex != handledDevirtualizedIndex && !IsAlive(activeIndex))
             {
+                handledDevirtualizedIndex = activeIndex;
+                Debug.Log("[Lyoko] " + (ActiveCharacter != null ? ActiveCharacter.name : "Warrior") + " devirtualized.");
                 ActivateNextAlive();
             }
         }
