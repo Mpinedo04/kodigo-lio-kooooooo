@@ -37,7 +37,7 @@
 
 **Terminado cuando:** recorrer el `MovementGym` con los 3 personajes resulta cómodo con teclado y mando, sin que la cámara se atasque.
 
-- [ ] **F3.17** (Lo tiene que hacer una persona) Recorrer el `MovementGym` con Odd, Ulrich y Yumi, con teclado y con mando, y anotar qué se siente mal. Los valores se ajustan en `MovementProfile.asset` y en los componentes de `CameraRig` sin tocar código.
+- [x] **F3.17** (Lo tiene que hacer una persona) Recorrer el `MovementGym` con Odd, Ulrich y Yumi, con teclado y con mando, y anotar qué se siente mal. Los valores se ajustan en `MovementProfile.asset` y en los componentes de `CameraRig` sin tocar código. — Probado por el usuario en Unity (octubre de 2026).
 
 **Riesgos:** el `CharacterController` de Unity tiene límites (pendientes, escalones). Si da problemas, valorar un controlador cinemático propio, pero solo si es necesario.
 

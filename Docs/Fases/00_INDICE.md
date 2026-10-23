@@ -2,7 +2,7 @@
 
 Plan para llevar el prototipo al juego completo de [`BIBLIA_DEL_JUEGO.md`](../BIBLIA_DEL_JUEGO.md). Hay **un archivo por fase**: lee solo la fase en la que estés trabajando. Las reglas comunes están en [`00_REGLAS.md`](00_REGLAS.md).
 
-**Fase activa:** F04 — solo falta probar el combate en la `CombatArena` (F4.17). También queda la prueba de la F03 en el `MovementGym` (F3.17). Después, F05
+**Fase activa:** F10 (HUD, menús y UI). F03–F05 y F07–F09 están hechas y probadas; de F06 solo queda F6.15 (equilibrar los monstruos jugando en `EnemyGym`). Después, F11
 
 **Estados:** `Pendiente` · `En curso` · `Hecha`. Al cambiar el estado de una fase, actualiza esta tabla y la línea **Fase activa**.
 
@@ -11,13 +11,13 @@ Plan para llevar el prototipo al juego completo de [`BIBLIA_DEL_JUEGO.md`](../BI
 | [F00](F00_entorno.md) | Preparar el entorno | A | — | 1 sem | Hecha |
 | [F01](F01_recuperar_prototipo.md) | Recuperar y estabilizar el prototipo | A | F00 | 1–2 sem | Hecha |
 | [F02](F02_arquitectura.md) | Arquitectura base | A | F01 | 3 sem | Hecha |
-| [F03](F03_movimiento_camara.md) | Movimiento y cámara | A | F02 | 2 sem | En curso |
-| [F04](F04_combate_base.md) | Combate base | B | F03 | 3 sem | En curso |
-| [F05](F05_habilidades.md) | Habilidades de los personajes | B | F04 | 4 sem | Pendiente |
-| [F06](F06_enemigos_t1.md) | Enemigos de la Temporada 1 | B | F04 | 4 sem | Pendiente |
-| [F07](F07_aelita_torres_mision.md) | Aelita, torres y misión | B | F05, F06 | 2 sem | Pendiente |
-| [F08](F08_vehiculos.md) | Vehículos | B | F03 | 2 sem (paralela a F05–F07) | Pendiente |
-| [F09](F09_arte_vertical_slice.md) | Arte de la vertical slice | C | F03 | 6–8 sem (paralela a F04–F08) | Pendiente |
+| [F03](F03_movimiento_camara.md) | Movimiento y cámara | A | F02 | 2 sem | Hecha |
+| [F04](F04_combate_base.md) | Combate base | B | F03 | 3 sem | Hecha |
+| [F05](F05_habilidades.md) | Habilidades de los personajes | B | F04 | 4 sem | Hecha |
+| [F06](F06_enemigos_t1.md) | Enemigos de la Temporada 1 | B | F04 | 4 sem | En curso |
+| [F07](F07_aelita_torres_mision.md) | Aelita, torres y misión | B | F05, F06 | 2 sem | Hecha |
+| [F08](F08_vehiculos.md) | Vehículos | B | F03 | 2 sem (paralela a F05–F07) | Hecha |
+| [F09](F09_arte_vertical_slice.md) | Arte de la vertical slice | C | F03 | 6–8 sem (paralela a F04–F08) | Hecha (arte por código) |
 | [F10](F10_hud_menus_ui.md) | HUD, menús y UI | C | F04 | 2 sem | Pendiente |
 | [F11](F11_audio.md) | Audio | C | F04 | 1–2 sem | Pendiente |
 | [F12](F12_vertical_slice_terminada.md) | **Vertical slice terminada** (demo) | C | F05–F11 | 1 sem | Pendiente |

@@ -30,6 +30,11 @@ MonoBehaviour:
   basicCooldown: 0.28
   specialCooldown: 1.6
   meleeCombo: {fileID: 11400000, guid: 8a051af6dbbd314468d1e7480904cb9a, type: 2}
+  basicBurst: 1
+  basicHoming: 0
+  basicProjectileSpeed: 1
+  specialStagger: 0
+  specialExplosionRadius: 0
   canDoubleJump: 0
   canWallClimb: 0
   canLongJump: 0
@@ -39,6 +44,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4b2dca49013335044bee4c0770116745, type: 2}
   - {fileID: 11400000, guid: 14a3d63afde10c241a6a78b9939fca31, type: 2}
   - {fileID: 11400000, guid: 614f5986afa006f45bf2e82b953513e5, type: 2}
+  - {fileID: 11400000, guid: e008af558d924c94d9a02dc53e1325a7, type: 2}
   portrait: {fileID: 0}
   icon: {fileID: 0}
   outfits: []

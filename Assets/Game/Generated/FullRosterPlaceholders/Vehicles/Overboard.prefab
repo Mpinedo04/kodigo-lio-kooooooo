@@ -114,7 +114,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 887142971323986590}
-  - component: {fileID: 3221161159959832731}
+  - component: {fileID: 3627476968420688659}
+  - component: {fileID: 6613083430816553882}
   m_Layer: 0
   m_Name: Overboard
   m_TagString: Untagged
@@ -138,7 +139,7 @@ Transform:
   - {fileID: 7505767380215467524}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3221161159959832731
+--- !u!114 &3627476968420688659
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,12 +148,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 9217362598830659759}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f004fd13e637594899d8fb77b87dce1, type: 3}
+  m_Script: {fileID: 11500000, guid: eead5801b1102d140b26bffaf9d2f36a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
-  style: 1
-  speedMultiplier: 1.7
-  canFly: 1
-  hoverBob: 0.08
-  hoverRate: 5
+  maxHealth: 100
+  team: 0
+  destroyOnDeath: 0
+  destroyDelay: 0.05
+  hitInvulnerability: 0
+  devirtualizeEffect: 1
+--- !u!114 &6613083430816553882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9217362598830659759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4189eca2292754ab886b0fe01e47c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 2cf1672ec8144e64898c5bfdf26aa90b, type: 2}
+  visual: {fileID: 0}
+  passengerSeat: {fileID: 0}
+  explosionColor: {r: 1, g: 0.55, b: 0.15, a: 1}

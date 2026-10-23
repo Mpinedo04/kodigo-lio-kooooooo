@@ -16,13 +16,67 @@ MonoBehaviour:
   displayName: Overboard
   defaultRider: 0
   canonNotes: Odd's purple flying board. Highest agility.
-  speedMultiplier: 1.7
-  acceleration: 18
-  turnSharpness: 10
+  cruiseSpeed: 16
+  boostMultiplier: 1.7
+  acceleration: 24
+  drag: 10
+  cornerSpeedFactor: 0.55
+  turnRate: 210
+  highSpeedTurnFactor: 0.7
+  grip: 12
+  bankAngle: 30
+  canFly: 1
+  verticalSpeed: 9
+  verticalAcceleration: 30
+  pitchSteering: 0.8
+  neutralCameraPitch: -11
+  pitchDeadZone: 4
+  pitchRange: 10
+  maxAltitude: 45
+  gravity: 32
+  groundSnapDistance: 1.2
+  jumpForce: 10
+  boostJumpMultiplier: 1.4
+  canDrift: 0
+  driftTurnMultiplier: 1.7
+  driftGrip: 1.8
+  driftMinSpeed: 8
+  driftFullChargeTime: 1.2
+  driftBoostSpeed: 8
+  driftBoostDuration: 0.9
+  ramDamage: 0
+  ramMinSpeed: 12
+  ramRadius: 1.3
+  ramKnockback: 9
+  ramRehitDelay: 0.6
+  ramSpeedKept: 0.7
+  canTrick: 1
+  tricksOnlyAirborne: 0
+  trickDuration: 0.55
+  trickCooldown: 0.1
+  trickMeterGain: 8
+  trickComboWindow: 1.6
+  trickComboBonus: 0.5
+  maxTrickMultiplier: 3
+  maxHealth: 100
+  hitInvulnerability: 0.25
+  respawnCooldown: 6
+  regenPerSecondStored: 4
+  explosionDamage: 20
+  explosionRadius: 4
+  seatHeight: 0.5
+  riderCanShoot: 1
+  riderCanUseSpecial: 1
+  mountDuration: 0.35
+  dismountDuration: 0.3
   hoverBob: 0.08
   hoverRate: 5
-  canFly: 1
   canCarryPassenger: 0
+  passengerSeatOffset: {x: 0, y: -0.1, z: -0.85}
+  passengerBoardRadius: 7
+  passengerFireInterval: 1.1
+  passengerFireRange: 24
+  passengerDamage: 10
   digitalSeaVehicle: 0
   appearsInVerticalSlice: 1
   prototypePrefab: {fileID: 0}

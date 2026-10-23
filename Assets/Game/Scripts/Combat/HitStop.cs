@@ -37,7 +37,8 @@ namespace CodeLyokoFanGame
         internal static void End(float restoredTimeScale)
         {
             Active = false;
-            Time.timeScale = restoredTimeScale;
+            // Slow motion may have started or ended during the freeze; it decides the speed to go back to.
+            Time.timeScale = restoredTimeScale <= 0f ? 0f : SlowMotion.CurrentScale;
         }
     }
 }

@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   kind: 4
   displayName: Megatank
-  canonNotes: Armored boss. Exposes weak point during heavy laser wind-up.
+  canonNotes: Bola rodante blindada. Se abre y dispara un rayo enorme. Solo vulnerable
+    abierta. PV 150, dano 40-60, amenaza 4.
   behaviorStyle: 4
-  maxHealth: 260
-  detectionRange: 34
-  attackRange: 24
-  moveSpeed: 1.4
-  projectileDamage: 34
+  maxHealth: 150
+  detectionRange: 30
+  attackRange: 20
+  moveSpeed: 3.2
+  projectileDamage: 50
   fireCooldown: 2.4
   specialCooldown: 4
   hoverHeight: 0
@@ -28,12 +29,70 @@ MonoBehaviour:
   flying: 0
   boss: 1
   digitalSeaOnly: 0
-  weakPointNotes: Eye of X.A.N.A.
+  weakPointNotes: Ojo de X.A.N.A.
   weakPointDamageMultiplier: 2.5
   weakPointAlwaysExposed: 0
   weakPointInstantKill: 0
   knockbackScale: 0
-  attacks: []
+  visionAngle: 180
+  alertAllyRadius: 18
+  forgetTargetAfter: 4
+  reactionTime: 0.8
+  patrolRadius: 3
+  idleTime: 2
+  preferredDistance: 12
+  turnSpeed: 110
+  bodyRadius: 1.4
+  attackGap: 1.5
+  staggerMultiplier: 0.3
+  heavyHitStagger: 0
+  guardCrackDuration: 1.2
+  liftableByTelekinesis: 0
+  partHealth: 25
+  partsToKnockDown: 2
+  knockedDownDuration: 4
+  dataDrop: 5
+  attacks:
+  - attackName: Rayo horizontal
+    type: 6
+    damage: 40
+    cooldown: 5
+    range: 20
+    windup: 1
+    recovery: 1
+    burstCount: 1
+    burstInterval: 0.15
+    activeTime: 0.6
+    knockback: 10
+    heavy: 1
+    areaSize: 24
+    areaWidth: 7
+    areaThickness: 0.8
+    slowMultiplier: 0.5
+    statusDuration: 2
+    projectileSpeed: 18
+    weight: 1
+    projectilePrefab: {fileID: 0}
+  - attackName: Rayo vertical
+    type: 7
+    damage: 60
+    cooldown: 5
+    range: 20
+    windup: 1
+    recovery: 1
+    burstCount: 1
+    burstInterval: 0.15
+    activeTime: 0.6
+    knockback: 10
+    heavy: 1
+    areaSize: 24
+    areaWidth: 6
+    areaThickness: 1.4
+    slowMultiplier: 0.5
+    statusDuration: 2
+    projectileSpeed: 18
+    weight: 1
+    projectilePrefab: {fileID: 0}
   bossPhases: []
   attackSound: {fileID: 0}
   hitSound: {fileID: 0}

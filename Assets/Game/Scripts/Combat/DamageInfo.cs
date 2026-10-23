@@ -14,6 +14,8 @@ namespace CodeLyokoFanGame
         public bool isCritical;
         public bool isHeavy;
         public float knockback;
+        // Seconds the target is stunned (Odd's charged arrow); 0 = none.
+        public float stagger;
         public bool ignoreInvulnerability;
 
         public static DamageInfo Simple(float amount, GameObject source = null, DamageType type = DamageType.Environment)

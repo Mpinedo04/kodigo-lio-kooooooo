@@ -144,6 +144,30 @@ namespace CodeLyokoFanGame
         FlightEnergy
     }
 
+    public enum CreativityKind
+    {
+        Bridge,
+        Wall
+    }
+
+    // Orders the player gives Aelita with Z (F7.2).
+    public enum AelitaOrder
+    {
+        Follow,
+        Wait,
+        Hide,
+        GoToTower
+    }
+
+    // Halo colour of a tower (Biblia 7): blue neutral, red X.A.N.A., green Jeremie/Aelita, white Franz Hopper.
+    public enum TowerState
+    {
+        Neutral,
+        Xana,
+        Jeremie,
+        FranzHopper
+    }
+
     public enum Team
     {
         Neutral,
@@ -171,5 +195,37 @@ namespace CodeLyokoFanGame
         DigitalSea,
         Replika,
         Cortex
+    }
+
+    // F06: enemy brain states and attack kinds.
+    public enum EnemyStateId
+    {
+        Idle,
+        Patrol,
+        Alert,
+        Chase,
+        Attack,
+        Stagger,
+        Dead
+    }
+
+    public enum EnemyAttackType
+    {
+        Laser,
+        Burst,
+        Melee,
+        IceShot,
+        FireRing,
+        PrisonRay,
+        BeamHorizontal,
+        BeamVertical
+    }
+
+    public enum EnemyAttackPhase
+    {
+        None,
+        Windup,
+        Active,
+        Recovery
     }
 }

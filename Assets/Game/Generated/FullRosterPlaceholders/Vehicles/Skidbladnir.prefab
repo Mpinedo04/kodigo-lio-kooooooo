@@ -114,7 +114,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5645810235470610506}
-  - component: {fileID: 687130871354605606}
+  - component: {fileID: 3845821603519970562}
+  - component: {fileID: 1141951791837092366}
   m_Layer: 0
   m_Name: Skidbladnir
   m_TagString: Untagged
@@ -139,7 +140,7 @@ Transform:
   - {fileID: 1649435551654685237}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &687130871354605606
+--- !u!114 &3845821603519970562
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -148,15 +149,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 5218106978711165662}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f004fd13e637594899d8fb77b87dce1, type: 3}
+  m_Script: {fileID: 11500000, guid: eead5801b1102d140b26bffaf9d2f36a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
-  style: 4
-  speedMultiplier: 1.7
-  canFly: 1
-  hoverBob: 0.08
-  hoverRate: 5
+  maxHealth: 100
+  team: 0
+  destroyOnDeath: 0
+  destroyDelay: 0.05
+  hitInvulnerability: 0
+  devirtualizeEffect: 1
+--- !u!114 &1141951791837092366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5218106978711165662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4189eca2292754ab886b0fe01e47c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 76dd82396bd49864b9503beb560ce4a7, type: 2}
+  visual: {fileID: 0}
+  passengerSeat: {fileID: 0}
+  explosionColor: {r: 1, g: 0.55, b: 0.15, a: 1}
 --- !u!1 &7745324532123264270
 GameObject:
   m_ObjectHideFlags: 0

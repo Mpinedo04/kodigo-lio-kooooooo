@@ -1,4 +1,5 @@
 using System.IO;
+using CodeLyokoFanGame.Data;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -100,7 +101,15 @@ namespace CodeLyokoFanGame.EditorTools
             root.tag = "Enemy";
             root.AddComponent<Health>();
             EnemyAI enemy = root.AddComponent<EnemyAI>();
-            enemy.Configure(kind, null);
+            EnemyDefinition definition = EnemyDataBuilder.Find(kind);
+            if (definition != null)
+            {
+                enemy.Configure(definition, null);
+            }
+            else
+            {
+                enemy.Configure(kind, null);
+            }
 
             Vector3 scale = kind == EnemyKind.Kolossus ? new Vector3(4f, 6f, 2f) : EnemyScale(kind);
             Primitive("Body", kind == EnemyKind.Megatank ? PrimitiveType.Sphere : PrimitiveType.Cube, root.transform, Vector3.up, scale, bodyMaterial);
@@ -137,8 +146,9 @@ namespace CodeLyokoFanGame.EditorTools
         private static void Vehicle(string name, VehicleStyle style, Material material)
         {
             GameObject root = new GameObject(name);
-            VehicleRig rig = root.AddComponent<VehicleRig>();
-            rig.Configure(style);
+            root.AddComponent<Health>().SetDestroyOnDeath(false);
+            VehicleController vehicle = root.AddComponent<VehicleController>();
+            vehicle.Configure(AssetDatabase.LoadAssetAtPath<CodeLyokoFanGame.Data.VehicleDefinition>("Assets/Game/Data/Vehicles/" + name + ".asset"));
 
             Primitive("Body", style == VehicleStyle.Overbike ? PrimitiveType.Cylinder : PrimitiveType.Cube, root.transform, Vector3.zero, VehicleScale(style), material);
 

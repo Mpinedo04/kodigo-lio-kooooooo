@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using CodeLyokoFanGame.Data;
 
@@ -7,6 +8,8 @@ namespace CodeLyokoFanGame
     [RequireComponent(typeof(PlayerCombat))]
     public sealed class PlayerController : MonoBehaviour, IKnockbackReceiver
     {
+        private static readonly List<PlayerController> Active = new List<PlayerController>();
+
         [Header("Identity")]
         [SerializeField] private CharacterDefinition definition;
         [SerializeField] private LyokoCharacter character = LyokoCharacter.Odd;
@@ -25,13 +28,16 @@ namespace CodeLyokoFanGame
         [SerializeField] private bool canLongJump;
 
         [Header("Vehicle")]
-        [SerializeField] private VehicleRig vehiclePrefab;
+        [SerializeField] private VehicleController vehiclePrefab;
         [SerializeField] private Transform vehicleSocket;
 
         private CharacterController controller;
         private PlayerCombat combat;
         private PlayerGuard guard;
         private Health health;
+        private AbilityController abilities;
+        private CompanionAI companion;
+        private StatusEffects status;
         private Transform cameraTransform;
         private Transform cameraTarget;
         private LockOnSystem lockOn;
@@ -47,14 +53,32 @@ namespace CodeLyokoFanGame
         private Vector3 dodgeDirection;
         private float dodgeTimer;
         private float dodgeCooldownTimer;
+        private Vector3 forcedVelocity;
+        private float forcedTimer;
+        private float stunTimer;
         private MovingPlatform groundPlatform;
 
         private bool controlActive;
-        private bool mounted;
-        private VehicleRig vehicleInstance;
+        private bool checkVehicleHandoff;
+        private VehicleController vehicleInstance;
+
+        // Warriors in Lyoko right now (controlled or AI companions).
+        public static IReadOnlyList<PlayerController> All => Active;
+
+        // Aelita's order wheel borrows the move stick while it is open.
+        public static bool MoveInputBlocked { get; set; }
 
         public LyokoCharacter Character => character;
-        public bool IsMounted => mounted;
+        public CharacterDefinition Definition => definition;
+        public bool IsControlled => controlActive;
+        public bool IsMounted => vehicleInstance != null && vehicleInstance.HasRider;
+        public VehicleController Vehicle => vehicleInstance;
+        public bool IsStunned => stunTimer > 0f;
+        // Blok's prison ray (F06): no walking or jumping while it lasts.
+        public bool IsRooted => status != null && status.IsRooted;
+        public bool IsForcedMoving => forcedTimer > 0f;
+        // > 0 caps the fall speed (Aelita's wings).
+        public float GlideFallSpeed { get; set; }
         public bool IsSprinting { get; private set; }
         public bool IsDodging => dodgeTimer > 0f;
         public bool IsGrounded => controller != null && controller.isGrounded;
@@ -119,31 +143,57 @@ namespace CodeLyokoFanGame
             combat = GetComponent<PlayerCombat>();
             combat.SetLockOn(targeter);
             ApplyDefinition(definition);
+
+            if (TryGetComponent(out AbilityController ownAbilities))
+            {
+                ownAbilities.Initialize(reader, cameraTransformForMovement, targeter);
+            }
         }
 
+        // The warrior not being controlled stays in Lyoko as an AI companion (F5.28).
         public void SetControlActive(bool active)
         {
-            controlActive = active;
-            gameObject.SetActive(active);
-
-            if (!active)
+            if (!active && IsMounted)
             {
-                return;
+                vehicleInstance.Dismount(true);
             }
 
+            controlActive = active;
             horizontalVelocity = Vector3.zero;
             verticalVelocity = 0f;
             dodgeTimer = 0f;
+            forcedTimer = 0f;
             IsSprinting = false;
+
+            if (companion == null)
+            {
+                companion = GetComponent<CompanionAI>();
+            }
+
+            if (companion != null)
+            {
+                companion.enabled = !active;
+            }
+
+            if (!active)
+            {
+                if (combat != null)
+                {
+                    combat.CancelCharge();
+                }
+
+                return;
+            }
 
             if (lockOn != null)
             {
                 lockOn.SetOwner(transform);
             }
 
+            checkVehicleHandoff = true;
             if (input != null)
             {
-                input.SetVehicleMode(mounted);
+                input.SetVehicleMode(IsMounted);
             }
         }
 
@@ -152,6 +202,8 @@ namespace CodeLyokoFanGame
             controller = GetComponent<CharacterController>();
             combat = GetComponent<PlayerCombat>();
             health = GetComponent<Health>();
+            abilities = GetComponent<AbilityController>();
+            companion = GetComponent<CompanionAI>();
             if (!TryGetComponent(out guard))
             {
                 guard = gameObject.AddComponent<PlayerGuard>();
@@ -170,15 +222,75 @@ namespace CodeLyokoFanGame
             {
                 GameObject socket = new GameObject("VehicleSocket");
                 socket.transform.SetParent(transform);
-                socket.transform.localPosition = new Vector3(0f, -0.9f, 0f);
+                socket.transform.localPosition = Vector3.zero;
                 vehicleSocket = socket.transform;
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (!Active.Contains(this))
+            {
+                Active.Add(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            Active.Remove(this);
+        }
+
+        // Abilities take over the legs for a moment (Supersprint, Triangular). Works for AI companions too.
+        public void ForceMove(Vector3 velocity, float duration)
+        {
+            forcedVelocity = Vector3.ProjectOnPlane(velocity, Vector3.up);
+            forcedTimer = duration;
+            dodgeTimer = 0f;
+            if (forcedVelocity.sqrMagnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.LookRotation(forcedVelocity);
+            }
+        }
+
+        public void StopForcedMove()
+        {
+            forcedTimer = 0f;
+            horizontalVelocity = Vector3.zero;
+        }
+
+        // Launches the warrior up (Feline Rain leap, wing flaps). Releasing jump does not cut it.
+        public void SetVerticalVelocity(float value)
+        {
+            verticalVelocity = value;
+            isJumping = value > 0f;
+            jumpCutApplied = true;
+        }
+
+        public void Stun(float seconds)
+        {
+            stunTimer = Mathf.Max(stunTimer, seconds);
+        }
+
+        public void ForceDismount()
+        {
+            if (IsMounted)
+            {
+                vehicleInstance.Dismount(false);
             }
         }
 
         private void Update()
         {
+            stunTimer -= Time.deltaTime;
+
             if (!controlActive || input == null)
             {
+                if (forcedTimer > 0f && controller != null && controller.enabled)
+                {
+                    forcedTimer -= Time.deltaTime;
+                    controller.Move((forcedVelocity + Vector3.down * 2f) * Time.deltaTime);
+                }
+
                 return;
             }
 
@@ -187,20 +299,31 @@ namespace CodeLyokoFanGame
                 lockOn.ToggleLock();
             }
 
-            if (mounted ? input.DismountPressed : input.VehiclePressed)
+            // A warrior switched in while the previous one was riding keeps going on its own vehicle.
+            if (checkVehicleHandoff)
+            {
+                checkVehicleHandoff = false;
+                if (VehicleController.HandoffPending && EnsureVehicle())
+                {
+                    vehicleInstance.TakeHandoff(input);
+                }
+            }
+
+            if (IsMounted)
+            {
+                combat.CancelCharge();
+                vehicleInstance.Drive(input, cameraTransform, Time.deltaTime);
+                return;
+            }
+
+            if (input.VehiclePressed && !IsStunned)
             {
                 ToggleVehicle();
             }
 
-            if (mounted)
-            {
-                combat.CancelCharge();
-                if (input.FirePressed)
-                {
-                    combat.BasicAttack();
-                }
-            }
-            else
+            // Telekinesis uses the attack button to throw; a stunned warrior can only fall.
+            bool attacksFree = !IsStunned && (abilities == null || !abilities.BlocksAttacks);
+            if (attacksFree)
             {
                 combat.HandleAttackInput(input.AttackPressed, input.AttackHeld);
                 if (input.GuardPressed)
@@ -208,8 +331,12 @@ namespace CodeLyokoFanGame
                     guard.Press();
                 }
             }
+            else
+            {
+                combat.CancelCharge();
+            }
 
-            if (input.SpecialPressed)
+            if (attacksFree && input.SpecialPressed)
             {
                 combat.SpecialAttack();
             }
@@ -220,59 +347,57 @@ namespace CodeLyokoFanGame
         private void Move(float dt)
         {
             bool grounded = controller.isGrounded;
-            Vector2 moveInput = Vector2.ClampMagnitude(mounted ? input.Steer : input.Move, 1f);
+            if (status == null)
+            {
+                TryGetComponent(out status);
+            }
+
+            Vector2 moveInput = IsStunned || IsRooted || MoveInputBlocked ? Vector2.zero : Vector2.ClampMagnitude(input.Move, 1f);
             Vector3 camForward = cameraTransform != null ? Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up).normalized : Vector3.forward;
             Vector3 camRight = cameraTransform != null ? Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized : Vector3.right;
             Vector3 desired = camForward * moveInput.y + camRight * moveInput.x;
             bool hasInput = desired.sqrMagnitude > 0.01f;
 
-            bool wantsFast = mounted ? input.BoostHeld : input.SprintHeld;
+            bool wantsFast = input.SprintHeld;
             IsSprinting = wantsFast && hasInput;
-            float targetSpeed = wantsFast ? sprintSpeed : walkSpeed;
-            if (mounted)
-            {
-                targetSpeed *= vehicleInstance != null ? vehicleInstance.SpeedMultiplier : 1.55f;
-            }
+            float targetSpeed = (wantsFast ? sprintSpeed : walkSpeed) * (status != null ? status.SpeedMultiplier : 1f);
 
             dodgeCooldownTimer -= dt;
-            if (!mounted && input.DodgePressed && dodgeCooldownTimer <= 0f)
+            if (!IsStunned && !IsRooted && input.DodgePressed && dodgeCooldownTimer <= 0f)
             {
                 StartDodge(desired);
             }
 
-            if (dodgeTimer > 0f)
+            if (forcedTimer > 0f)
+            {
+                forcedTimer -= dt;
+                horizontalVelocity = forcedVelocity;
+            }
+            else if (dodgeTimer > 0f)
             {
                 dodgeTimer -= dt;
                 horizontalVelocity = dodgeDirection * dodgeSpeed;
             }
             else
             {
-                float acceleration = grounded || mounted
+                float acceleration = grounded
                     ? (hasInput ? movement.acceleration : movement.deceleration)
                     : movement.airAcceleration;
                 horizontalVelocity = MovementMath.Accelerate(horizontalVelocity, desired * targetSpeed, acceleration, dt);
 
-                if (!mounted && grounded && !wantsFast && movement.edgeProtection)
+                if (grounded && !wantsFast && movement.edgeProtection)
                 {
                     horizontalVelocity = StopAtEdge(horizontalVelocity);
                 }
             }
 
-            Vector3 facing = dodgeTimer > 0f ? dodgeDirection : desired;
+            Vector3 facing = forcedTimer > 0f ? forcedVelocity : dodgeTimer > 0f ? dodgeDirection : desired;
             if (facing.sqrMagnitude > 0.001f)
             {
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), movement.turnSpeed * dt);
             }
 
-            if (mounted && vehicleInstance != null && vehicleInstance.CanFly)
-            {
-                float vertical = (input.AscendHeld ? 1f : 0f) - (input.DescendHeld ? 1f : 0f);
-                verticalVelocity = vertical * movement.vehicleVerticalSpeed;
-            }
-            else
-            {
-                UpdateVertical(grounded, desired, wantsFast, dt);
-            }
+            UpdateVertical(grounded, desired, wantsFast, dt);
 
             Vector3 platformDelta = groundPlatform != null ? groundPlatform.Delta : Vector3.zero;
             groundPlatform = null; // refreshed by OnControllerColliderHit during Move
@@ -297,12 +422,12 @@ namespace CodeLyokoFanGame
                 }
             }
 
-            if (input.JumpPressed)
+            if (input.JumpPressed && !IsStunned && !IsRooted)
             {
                 jumpAssist.MarkJumpPressed(now);
             }
 
-            if (!mounted && jumpAssist.TryConsumeJump(now))
+            if (jumpAssist.TryConsumeJump(now))
             {
                 if (canLongJump && wantsFast && desired.sqrMagnitude > 0.25f)
                 {
@@ -317,7 +442,7 @@ namespace CodeLyokoFanGame
                 isJumping = true;
                 jumpCutApplied = false;
             }
-            else if (!mounted && input.JumpPressed && !grounded && canDoubleJump && airJumpsUsed < movement.maxAirJumps)
+            else if (!IsStunned && input.JumpPressed && !grounded && canDoubleJump && airJumpsUsed < movement.maxAirJumps)
             {
                 verticalVelocity = movement.doubleJumpForce;
                 airJumpsUsed++;
@@ -341,6 +466,10 @@ namespace CodeLyokoFanGame
             }
 
             verticalVelocity = MovementMath.ApplyGravity(verticalVelocity, movement.gravity, movement.fallGravityMultiplier, movement.maxFallSpeed, dt);
+            if (GlideFallSpeed > 0f && verticalVelocity < -GlideFallSpeed)
+            {
+                verticalVelocity = -GlideFallSpeed;
+            }
         }
 
         private void StartDodge(Vector3 desired)
@@ -389,7 +518,7 @@ namespace CodeLyokoFanGame
 
         public void ApplyKnockback(Vector3 velocity)
         {
-            if (mounted)
+            if (IsMounted)
             {
                 return;
             }
@@ -406,28 +535,29 @@ namespace CodeLyokoFanGame
             }
         }
 
+        // Summons the vehicle next to the warrior and starts riding (getting off is handled by VehicleController).
         private void ToggleVehicle()
         {
-            mounted = !mounted;
-            verticalVelocity = 0f;
+            if (!EnsureVehicle() || !vehicleInstance.TryMount(input, Velocity, false))
+            {
+                return;
+            }
 
+            horizontalVelocity = Vector3.zero;
+            verticalVelocity = 0f;
+            dodgeTimer = 0f;
+            IsSprinting = false;
+        }
+
+        private bool EnsureVehicle()
+        {
             if (vehicleInstance == null && vehiclePrefab != null)
             {
                 vehicleInstance = Instantiate(vehiclePrefab, vehicleSocket);
-                vehicleInstance.transform.localPosition = Vector3.zero;
-                vehicleInstance.transform.localRotation = Quaternion.identity;
-                vehicleInstance.Configure(vehicleStyle);
+                vehicleInstance.Bind(this);
             }
 
-            if (vehicleInstance != null)
-            {
-                vehicleInstance.gameObject.SetActive(mounted);
-            }
-
-            if (input != null)
-            {
-                input.SetVehicleMode(mounted);
-            }
+            return vehicleInstance != null;
         }
     }
 }

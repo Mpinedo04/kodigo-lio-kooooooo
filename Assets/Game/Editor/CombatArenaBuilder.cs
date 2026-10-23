@@ -6,8 +6,8 @@ using UnityEngine.SceneManagement;
 
 namespace CodeLyokoFanGame.EditorTools
 {
-    // Test scene for combat (F04): combos, charged attacks, dodge, parry, lock-on and devirtualization
-    // against two Kankrelats, a Krab and a Blok turret. Not part of the build.
+    // Test scene for combat (F04) and abilities (F05): combos, charged attacks, dodge, parry, lock-on, abilities,
+    // AI companions and synergies against two Kankrelats, a Krab and a Blok turret. Not part of the build.
     public static class CombatArenaBuilder
     {
         public const string ScenePath = "Assets/Scenes/Test/CombatArena.unity";
@@ -30,12 +30,14 @@ namespace CodeLyokoFanGame.EditorTools
             Material violet = CodeLyokoSceneBuilder.Material("Odd_Violet", new Color(0.45f, 0.18f, 0.95f), 0.4f);
             Material green = CodeLyokoSceneBuilder.Material("Ulrich_Green", new Color(0.06f, 0.42f, 0.2f), 0.3f);
             Material black = CodeLyokoSceneBuilder.Material("Yumi_Black", new Color(0.02f, 0.02f, 0.025f), 0.2f);
+            Material pink = CodeLyokoSceneBuilder.Material("Aelita_Pink", new Color(1f, 0.45f, 0.8f), 0.6f);
+            Material rock = CodeLyokoSceneBuilder.Material("Lyoko_Rock", new Color(0.45f, 0.36f, 0.25f), 0f);
 
             Projectile playerProjectile = CodeLyokoSceneBuilder.BuildProjectilePrefab("PlayerEnergyDart", cyan, false);
             Projectile enemyProjectile = CodeLyokoSceneBuilder.BuildProjectilePrefab("XanaLaser", red, true);
-            VehicleRig overboard = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overboard", VehicleStyle.Overboard, violet, PrimitiveType.Cube);
-            VehicleRig overbike = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overbike", VehicleStyle.Overbike, green, PrimitiveType.Cylinder);
-            VehicleRig overwing = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overwing", VehicleStyle.Overwing, black, PrimitiveType.Cube);
+            VehicleController overboard = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overboard", VehicleStyle.Overboard, violet, PrimitiveType.Cube);
+            VehicleController overbike = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overbike", VehicleStyle.Overbike, green, PrimitiveType.Cylinder);
+            VehicleController overwing = CodeLyokoSceneBuilder.BuildVehiclePrefab("Overwing", VehicleStyle.Overwing, black, PrimitiveType.Cube);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -72,12 +74,26 @@ namespace CodeLyokoFanGame.EditorTools
             switcher.Register(CodeLyokoSceneBuilder.CreatePlayer("Odd", LyokoCharacter.Odd, AttackStyle.Ranged, VehicleStyle.Overboard, violet, overboard, playerProjectile, switcher, lockOn, spawn));
             switcher.Register(CodeLyokoSceneBuilder.CreatePlayer("Ulrich", LyokoCharacter.Ulrich, AttackStyle.Melee, VehicleStyle.Overbike, green, overbike, playerProjectile, switcher, lockOn, spawn));
             switcher.Register(CodeLyokoSceneBuilder.CreatePlayer("Yumi", LyokoCharacter.Yumi, AttackStyle.Telekinetic, VehicleStyle.Overwing, black, overwing, playerProjectile, switcher, lockOn, spawn));
+            // Aelita is playable here (key 4) to test her F05 kit; in the missions she is the AI companion until Chapter 3.
+            Projectile energyField = CodeLyokoSceneBuilder.BuildProjectilePrefab("AelitaEnergyField", pink, false, true);
+            switcher.Register(CodeLyokoSceneBuilder.CreatePlayer("Aelita", LyokoCharacter.Aelita, AttackStyle.Support, VehicleStyle.Overwing, pink, overwing, energyField, switcher, lockOn, spawn));
             hud.Configure(switcher, null, null, null);
+
+            // F05: rocks for Yumi's telekinesis, and Creativity zones for Aelita (a gap between two blocks and a wall spot facing the Blok).
+            AbilityPropsBuilder.CreateRock("TK_Rock_A", new Vector3(-3f, 0.5f, -8f), 1f, rock);
+            AbilityPropsBuilder.CreateRock("TK_Rock_B", new Vector3(3f, 0.6f, -6f), 1.2f, rock);
+            AbilityPropsBuilder.CreateRock("TK_Rock_C", new Vector3(10f, 0.5f, -2f), 1f, rock);
+            CodeLyokoSceneBuilder.CreatePlatform("Creativity_Block_A", new Vector3(-14f, 0.4f, -8f), new Vector3(4f, 0.8f, 4f), wall);
+            CodeLyokoSceneBuilder.CreatePlatform("Creativity_Block_B", new Vector3(-14f, 2f, 4f), new Vector3(4f, 4f, 4f), wall);
+            AbilityPropsBuilder.CreateBridgeZone("Creativity_Bridge", new Vector3(-14f, 0.8f, -6f), new Vector3(-14f, 4f, 2f), pink);
+            AbilityPropsBuilder.CreateWallZone("Creativity_Wall", new Vector3(0f, 0f, 9f), Quaternion.identity, pink);
 
             CodeLyokoSceneBuilder.CreateEnemy("Kankrelat_A", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(-8f, 0.5f, 8f));
             CodeLyokoSceneBuilder.CreateEnemy("Kankrelat_B", EnemyKind.Kankrelat, orange, red, enemyProjectile, new Vector3(8f, 0.5f, 8f));
             CodeLyokoSceneBuilder.CreateEnemy("Krab_A", EnemyKind.Krab, wall, red, enemyProjectile, new Vector3(0f, 0.5f, 12f));
             CodeLyokoSceneBuilder.CreateEnemy("Blok_ParryPractice", EnemyKind.Blok, wall, red, enemyProjectile, new Vector3(0f, 0.5f, 18f));
+
+            NavMeshBakeUtility.PrepareEnemyScene("CombatArena");
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();

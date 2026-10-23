@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5624882095763785763}
-  - component: {fileID: 4676439581461587966}
+  - component: {fileID: 4426255351307514557}
+  - component: {fileID: 1943515595635763683}
   m_Layer: 0
   m_Name: NavSkid
   m_TagString: Untagged
@@ -33,7 +34,7 @@ Transform:
   - {fileID: 8204673727514326362}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4676439581461587966
+--- !u!114 &4426255351307514557
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,15 +43,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 3298631713001641529}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f004fd13e637594899d8fb77b87dce1, type: 3}
+  m_Script: {fileID: 11500000, guid: eead5801b1102d140b26bffaf9d2f36a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
-  style: 5
-  speedMultiplier: 1.7
-  canFly: 1
-  hoverBob: 0.08
-  hoverRate: 5
+  maxHealth: 100
+  team: 0
+  destroyOnDeath: 0
+  destroyDelay: 0.05
+  hitInvulnerability: 0
+  devirtualizeEffect: 1
+--- !u!114 &1943515595635763683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3298631713001641529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4189eca2292754ab886b0fe01e47c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 6b3c527c4a480c2449ac3097ca1f559e, type: 2}
+  visual: {fileID: 0}
+  passengerSeat: {fileID: 0}
+  explosionColor: {r: 1, g: 0.55, b: 0.15, a: 1}
 --- !u!1 &8099402818762465356
 GameObject:
   m_ObjectHideFlags: 0

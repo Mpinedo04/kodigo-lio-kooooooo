@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   kind: 2
   displayName: Krab
-  canonNotes: Tall heavy monster with leg attacks and strong eye lasers.
+  canonNotes: Cangrejo alto de cuatro patas. Laser y patadas. Ojo arriba; derribarlo
+    atacando las patas. PV 80, dano 20, amenaza 3.
   behaviorStyle: 2
-  maxHealth: 120
-  detectionRange: 28
-  attackRange: 18
-  moveSpeed: 3.2
-  projectileDamage: 18
+  maxHealth: 80
+  detectionRange: 26
+  attackRange: 16
+  moveSpeed: 3
+  projectileDamage: 20
   fireCooldown: 1.15
   specialCooldown: 4
   hoverHeight: 0
@@ -28,12 +29,70 @@ MonoBehaviour:
   flying: 0
   boss: 0
   digitalSeaOnly: 0
-  weakPointNotes: Eye of X.A.N.A.
+  weakPointNotes: Ojo de X.A.N.A.
   weakPointDamageMultiplier: 2.5
-  weakPointAlwaysExposed: 1
+  weakPointAlwaysExposed: 0
   weakPointInstantKill: 0
   knockbackScale: 0.5
-  attacks: []
+  visionAngle: 160
+  alertAllyRadius: 14
+  forgetTargetAfter: 4
+  reactionTime: 0.5
+  patrolRadius: 4
+  idleTime: 2
+  preferredDistance: 9
+  turnSpeed: 160
+  bodyRadius: 1.2
+  attackGap: 1
+  staggerMultiplier: 1
+  heavyHitStagger: 0.4
+  guardCrackDuration: 0
+  liftableByTelekinesis: 0
+  partHealth: 25
+  partsToKnockDown: 2
+  knockedDownDuration: 4
+  dataDrop: 3
+  attacks:
+  - attackName: Laser
+    type: 0
+    damage: 20
+    cooldown: 2.8
+    range: 16
+    windup: 0.7
+    recovery: 0.5
+    burstCount: 1
+    burstInterval: 0.15
+    activeTime: 0.5
+    knockback: 0
+    heavy: 0
+    areaSize: 8
+    areaWidth: 6
+    areaThickness: 1
+    slowMultiplier: 0.5
+    statusDuration: 2
+    projectileSpeed: 18
+    weight: 1
+    projectilePrefab: {fileID: 0}
+  - attackName: Patada
+    type: 2
+    damage: 20
+    cooldown: 2
+    range: 3.6
+    windup: 0.55
+    recovery: 0.5
+    burstCount: 1
+    burstInterval: 0.15
+    activeTime: 0.5
+    knockback: 9
+    heavy: 1
+    areaSize: 2.6
+    areaWidth: 6
+    areaThickness: 1
+    slowMultiplier: 0.5
+    statusDuration: 2
+    projectileSpeed: 18
+    weight: 3
+    projectilePrefab: {fileID: 0}
   bossPhases: []
   attackSound: {fileID: 0}
   hitSound: {fileID: 0}

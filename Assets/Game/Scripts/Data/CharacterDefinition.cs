@@ -40,6 +40,18 @@ namespace CodeLyokoFanGame.Data
         [Tooltip("Melee chain for Melee attack style (Ulrich, William).")]
         public ComboDefinition meleeCombo;
 
+        [Header("Attack details")]
+        [Tooltip("Shots per basic attack (Odd's laser arrow burst).")]
+        public int basicBurst = 1;
+        [Tooltip("How hard basic shots curve towards the target (Aelita's energy field). 0 = straight.")]
+        public float basicHoming;
+        [Tooltip("Speed of basic shots compared to the projectile prefab.")]
+        public float basicProjectileSpeed = 1f;
+        [Tooltip("Seconds the special attack stuns (Odd's charged arrow).")]
+        public float specialStagger;
+        [Tooltip("Area burst of the special/charged shot (Aelita). 0 = none.")]
+        public float specialExplosionRadius;
+
         [Header("Movement traits")]
         public bool canDoubleJump;
         public bool canWallClimb;

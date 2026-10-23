@@ -33,6 +33,24 @@ MonoBehaviour:
   weakPointAlwaysExposed: 0
   weakPointInstantKill: 0
   knockbackScale: 0
+  visionAngle: 160
+  alertAllyRadius: 12
+  forgetTargetAfter: 4
+  reactionTime: 0.4
+  patrolRadius: 4
+  idleTime: 2
+  preferredDistance: 8
+  turnSpeed: 360
+  bodyRadius: 0.6
+  attackGap: 0.6
+  staggerMultiplier: 1
+  heavyHitStagger: 0.5
+  guardCrackDuration: 1.5
+  liftableByTelekinesis: 0
+  partHealth: 25
+  partsToKnockDown: 2
+  knockedDownDuration: 4
+  dataDrop: 1
   attacks: []
   bossPhases: []
   attackSound: {fileID: 0}

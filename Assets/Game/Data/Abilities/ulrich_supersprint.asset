@@ -22,8 +22,16 @@ MonoBehaviour:
   cooldown: 4
   resource: 0
   cost: 0
-  duration: 1.2
+  duration: 0.45
   power: 1
   effectPrefab: {fileID: 0}
+  damage: 25
+  radius: 1.4
+  range: 14
+  speed: 28
+  count: 0
+  abilityHealth: 0
+  costPerSecond: 0
+  timeScale: 1
   unlockChapter: 0
   canon: 1

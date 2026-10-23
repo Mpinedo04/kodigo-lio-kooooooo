@@ -15,7 +15,9 @@ namespace CodeLyokoFanGame
         [SerializeField] private InputReader input;
 
         private readonly Dictionary<string, MissionMarker> markers = new Dictionary<string, MissionMarker>();
+        private readonly Dictionary<string, Checkpoint> checkpoints = new Dictionary<string, Checkpoint>();
         private int stepIndex = -1;
+        private int checkpointStep = -1;
         private float stepTimer;
 
         public MissionDefinition Mission => mission;
@@ -47,6 +49,12 @@ namespace CodeLyokoFanGame
             stepTimer = 0f;
             MissionStep step = mission.steps[index];
             SetPhase(step.phase, step.objective);
+
+            if (!string.IsNullOrEmpty(step.checkpointId) && checkpoints.TryGetValue(step.checkpointId, out Checkpoint checkpoint) && checkpoint != null)
+            {
+                checkpoint.Activate();
+                checkpointStep = index;
+            }
         }
 
         private void Start()
@@ -57,6 +65,15 @@ namespace CodeLyokoFanGame
                 if (!string.IsNullOrEmpty(found[i].Id))
                 {
                     markers[found[i].Id] = found[i];
+                }
+            }
+
+            Checkpoint[] points = FindObjectsOfType<Checkpoint>();
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(points[i].Id))
+                {
+                    checkpoints[points[i].Id] = points[i];
                 }
             }
 
@@ -74,7 +91,7 @@ namespace CodeLyokoFanGame
             {
                 if (input != null && input.RetryPressed)
                 {
-                    Retry();
+                    RetryFromCheckpoint();
                 }
 
                 return;
@@ -171,6 +188,51 @@ namespace CodeLyokoFanGame
             Phase = phase;
             CurrentObjectiveText = objective;
             Debug.Log("[Mission] " + phase + ": " + objective);
+        }
+
+        // Emergency Return to the Past (Biblia 13.4): the team and Aelita come back at the last checkpoint,
+        // the step it belongs to restarts, and X.A.N.A. grows stronger. Monsters already beaten stay beaten.
+        public void RetryFromCheckpoint()
+        {
+            if (Phase != MissionPhase.Failed)
+            {
+                return;
+            }
+
+            if (checkpointStep < 0 || switcher == null)
+            {
+                RestartMission();
+                return;
+            }
+
+            Vector3 fallback = switcher.Characters.Count > 0 && switcher.Characters[0] != null ? switcher.Characters[0].transform.position : transform.position;
+            Vector3 respawn = CheckpointRegistry.GetRespawnPosition(fallback);
+            Quaternion facing = CheckpointRegistry.ActiveCheckpoint != null ? CheckpointRegistry.ActiveCheckpoint.transform.rotation : Quaternion.identity;
+            switcher.ReviveAllAt(respawn, facing);
+
+            if (aelita != null)
+            {
+                aelita.gameObject.SetActive(true);
+                if (aelita.TryGetComponent(out Health aelitaHealth))
+                {
+                    aelitaHealth.ResetHealth();
+                }
+
+                TeamTeleport.Move(aelita, TeamTeleport.Spot(respawn, facing, switcher.Characters.Count));
+            }
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RaiseXanaLevel();
+            }
+
+            Debug.Log("[Mission] Retorno de emergencia al punto de control del paso " + checkpointStep);
+            JumpToStep(checkpointStep);
+        }
+
+        public void RestartMission()
+        {
+            Retry();
         }
 
         private static void Retry()

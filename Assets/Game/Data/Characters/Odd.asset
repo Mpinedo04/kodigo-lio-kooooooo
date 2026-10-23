@@ -30,6 +30,11 @@ MonoBehaviour:
   basicCooldown: 0.28
   specialCooldown: 1.6
   meleeCombo: {fileID: 0}
+  basicBurst: 2
+  basicHoming: 0
+  basicProjectileSpeed: 1
+  specialStagger: 1.2
+  specialExplosionRadius: 0
   canDoubleJump: 1
   canWallClimb: 1
   canLongJump: 0

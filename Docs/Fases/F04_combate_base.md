@@ -50,7 +50,7 @@
   - Los monstruos creados en partida tienen punto de disparo.
   - Los monstruos del Bosque están en el suelo y sobre plataformas.
   - Un tajo normal ya no cuenta como acierto en el ojo (solo los golpes fuertes).
-- [ ] **F4.17** (Lo tiene que hacer una persona) Luchar en la CombatArena con los tres guerreros: combo de Ulrich, ataques cargados, esquiva, desvío (`C` / LT justo antes del láser), fijado y cambio de objetivo. Anotar qué se siente mal.
+- [x] **F4.17** (Lo tiene que hacer una persona) Luchar en la CombatArena con los tres guerreros: combo de Ulrich, ataques cargados, esquiva, desvío (`C` / LT justo antes del láser), fijado y cambio de objetivo. Anotar qué se siente mal. — Probado por el usuario en Unity (octubre de 2026).
 
 **Scripts nuevos de esta fase**
 

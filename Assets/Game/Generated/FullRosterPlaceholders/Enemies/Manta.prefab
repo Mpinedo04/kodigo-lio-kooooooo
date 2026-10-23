@@ -276,7 +276,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 120
-  team: 0
+  team: 2
   destroyOnDeath: 1
   destroyDelay: 0.05
   hitInvulnerability: 0
@@ -293,19 +293,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d42c07e36cc9884fa9994edf437205a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
+  definition: {fileID: 11400000, guid: a1eba6ba4d1003740ae8c04cb6f0fa9e, type: 2}
   kind: 7
-  behaviorStyle: 7
   projectilePrefab: {fileID: 0}
-  firePoint: {fileID: 0}
-  aimPoint: {fileID: 0}
+  firePoint: {fileID: 1172059554805295730}
+  aimPoint: {fileID: 1172059554805295730}
   weakPoint: {fileID: 0}
-  detectionRange: 34
-  attackRange: 25
-  moveSpeed: 4.2
-  projectileDamage: 18
-  fireCooldown: 1.1
-  specialCooldown: 4
-  contactDamage: 0
-  hoverHeight: 5.2
-  weakPointAlwaysExposed: 1
+  bodyVisual: {fileID: 0}

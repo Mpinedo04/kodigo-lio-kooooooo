@@ -27,6 +27,18 @@ namespace CodeLyokoFanGame
         [SerializeField] private float sprintFovBoost = 8f;
         [SerializeField] private float fovSharpness = 8f;
 
+        [Header("Vehicle")]
+        [Tooltip("Extra field of view at the vehicle's top speed.")]
+        [SerializeField] private float vehicleSpeedFovBoost = 14f;
+        [Tooltip("The vehicle camera swings back behind the vehicle after this many seconds without camera input.")]
+        [SerializeField] private float vehicleRecenterWait = 0.6f;
+        [SerializeField] private float vehicleRecenterTime = 0.7f;
+        [SerializeField] private float vehicleHeightRecenterWait = 1.5f;
+        [SerializeField] private float vehicleHeightRecenterTime = 1.2f;
+        [Tooltip("Speed lines appear above this share of the vehicle's top speed.")]
+        [SerializeField] private float speedLinesThreshold = 0.5f;
+        [SerializeField] private bool speedLinesEnabled = true;
+
         [Header("Shake")]
         [SerializeField] private float heavyHitDamage = 15f;
         [SerializeField] private float hitShakeForce = 0.6f;
@@ -36,6 +48,7 @@ namespace CodeLyokoFanGame
         private PlayerController target;
         private Health targetHealth;
         private Transform lockedTarget;
+        private SpeedLines speedLines;
 
         public static void Shake(float force)
         {
@@ -69,6 +82,11 @@ namespace CodeLyokoFanGame
         private void OnEnable()
         {
             active = this;
+        }
+
+        private void Start()
+        {
+            ConfigureVehicleCamera();
         }
 
         private void OnDisable()
@@ -163,10 +181,51 @@ namespace CodeLyokoFanGame
                 exploreCamera.m_Lens.FieldOfView = Mathf.Lerp(exploreCamera.m_Lens.FieldOfView, exploreFov + boost, blend);
             }
 
+            float vehicleSpeed01 = target.IsMounted && target.Vehicle != null ? target.Vehicle.Speed01 : 0f;
             if (vehicleCamera != null)
             {
-                vehicleCamera.m_Lens.FieldOfView = Mathf.Lerp(vehicleCamera.m_Lens.FieldOfView, vehicleFov + boost, blend);
+                vehicleCamera.m_Lens.FieldOfView = Mathf.Lerp(vehicleCamera.m_Lens.FieldOfView, vehicleFov + vehicleSpeed01 * vehicleSpeedFovBoost, blend);
             }
+
+            UpdateSpeedLines(vehicleSpeed01);
+        }
+
+        // The vehicle camera follows behind the vehicle again when the player leaves the mouse / stick alone.
+        private void ConfigureVehicleCamera()
+        {
+            if (vehicleCamera == null)
+            {
+                return;
+            }
+
+            vehicleCamera.m_Heading.m_Definition = CinemachineOrbitalTransposer.Heading.HeadingDefinition.TargetForward;
+            vehicleCamera.m_RecenterToTargetHeading.m_enabled = true;
+            vehicleCamera.m_RecenterToTargetHeading.m_WaitTime = vehicleRecenterWait;
+            vehicleCamera.m_RecenterToTargetHeading.m_RecenteringTime = vehicleRecenterTime;
+            vehicleCamera.m_YAxisRecentering.m_enabled = true;
+            vehicleCamera.m_YAxisRecentering.m_WaitTime = vehicleHeightRecenterWait;
+            vehicleCamera.m_YAxisRecentering.m_RecenteringTime = vehicleHeightRecenterTime;
+        }
+
+        private void UpdateSpeedLines(float speed01)
+        {
+            if (!speedLinesEnabled)
+            {
+                return;
+            }
+
+            float intensity = speed01 > speedLinesThreshold ? (speed01 - speedLinesThreshold) / (1f - speedLinesThreshold) : 0f;
+            if (speedLines == null)
+            {
+                if (intensity <= 0f || Camera.main == null)
+                {
+                    return;
+                }
+
+                speedLines = SpeedLines.Attach(Camera.main.transform);
+            }
+
+            speedLines.SetIntensity(intensity);
         }
 
         private void OnTargetDamaged(Health health, DamageInfo info)

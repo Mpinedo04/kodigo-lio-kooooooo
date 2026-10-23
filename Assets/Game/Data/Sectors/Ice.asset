@@ -19,3 +19,15 @@ MonoBehaviour:
   music: {fileID: 0}
   towerCount: 0
   notes: Glaciares, suelo resbaladizo y puentes de hielo.
+  skyTop: {r: 0.88, g: 0.95, b: 1, a: 1}
+  skyHorizon: {r: 0.98, g: 1, b: 1, a: 1}
+  skyBottom: {r: 0.7, g: 0.86, b: 0.96, a: 1}
+  fogColor: {r: 0.9, g: 0.96, b: 1, a: 1}
+  fogDensity: 0.007
+  ambientColor: {r: 0.7, g: 0.78, b: 0.86, a: 1}
+  groundColor: {r: 0.76, g: 0.9, b: 1, a: 1}
+  terrainColor: {r: 0.55, g: 0.72, b: 0.88, a: 1}
+  accentColor: {r: 0.9, g: 1, b: 1, a: 1}
+  bloomIntensity: 0.7
+  saturation: 12
+  colorFilter: {r: 1, g: 1, b: 1, a: 1}

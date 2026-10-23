@@ -129,6 +129,11 @@ namespace CodeLyokoFanGame
                 {
                     return 0f;
                 }
+
+                if (TryGetComponent(out IDamageInterceptor interceptor) && interceptor.TryIntercept(info))
+                {
+                    return 0f;
+                }
             }
 
             float applied = Mathf.Min(Current, info.amount);

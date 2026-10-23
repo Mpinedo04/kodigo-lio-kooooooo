@@ -21,9 +21,17 @@ MonoBehaviour:
   kind: 7
   cooldown: 0
   resource: 3
-  cost: 0
+  cost: 25
   duration: 0
-  power: 1
+  power: 7
   effectPrefab: {fileID: 0}
+  damage: 0
+  radius: 0
+  range: 0
+  speed: 2.5
+  count: 0
+  abilityHealth: 0
+  costPerSecond: 12
+  timeScale: 1
   unlockChapter: 3
   canon: 1

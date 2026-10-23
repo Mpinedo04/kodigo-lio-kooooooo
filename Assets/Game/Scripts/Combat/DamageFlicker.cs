@@ -19,7 +19,7 @@ namespace CodeLyokoFanGame
             foreach (Renderer child in GetComponentsInChildren<Renderer>(true))
             {
                 // Vehicles mount later under VehicleSocket and keep their own visibility.
-                if (child.GetComponentInParent<VehicleRig>() == null)
+                if (child.GetComponentInParent<VehicleController>() == null)
                 {
                     renderers.Add(child);
                 }

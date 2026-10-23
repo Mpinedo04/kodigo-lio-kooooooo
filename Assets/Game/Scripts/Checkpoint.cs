@@ -2,13 +2,27 @@ using UnityEngine;
 
 namespace CodeLyokoFanGame
 {
+    // Respawn point. Activated when a warrior walks over it or when a mission step starts (MissionStep.checkpointId).
     public sealed class Checkpoint : MonoBehaviour
     {
+        [SerializeField] private string id;
         [SerializeField] private Transform respawnPoint;
         [SerializeField] private float activationRadius = 4f;
 
+        public string Id => id;
         public Vector3 RespawnPosition => respawnPoint != null ? respawnPoint.position : transform.position + Vector3.up * 2f;
         public bool IsActive { get; private set; }
+
+        public void SetId(string newId)
+        {
+            id = newId;
+        }
+
+        public void Activate()
+        {
+            IsActive = true;
+            CheckpointRegistry.SetActiveCheckpoint(this);
+        }
 
         private void Update()
         {
@@ -27,8 +41,7 @@ namespace CodeLyokoFanGame
 
                 if (Vector3.Distance(players[i].transform.position, transform.position) <= activationRadius)
                 {
-                    IsActive = true;
-                    CheckpointRegistry.SetActiveCheckpoint(this);
+                    Activate();
                     break;
                 }
             }
@@ -47,6 +60,12 @@ namespace CodeLyokoFanGame
         public static Vector3 GetRespawnPosition(Vector3 fallback)
         {
             return ActiveCheckpoint != null ? ActiveCheckpoint.RespawnPosition : fallback;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetState()
+        {
+            ActiveCheckpoint = null;
         }
     }
 }

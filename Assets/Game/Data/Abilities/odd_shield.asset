@@ -26,5 +26,13 @@ MonoBehaviour:
   duration: 4
   power: 1
   effectPrefab: {fileID: 0}
+  damage: 0
+  radius: 0
+  range: 0
+  speed: 0
+  count: 0
+  abilityHealth: 60
+  costPerSecond: 0
+  timeScale: 1
   unlockChapter: 2
   canon: 1

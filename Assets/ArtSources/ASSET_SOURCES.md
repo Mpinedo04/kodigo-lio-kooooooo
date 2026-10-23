@@ -23,6 +23,10 @@ Record every downloaded asset here before import:
 
 For the broader import queue, use `FAN_ASSET_IMPORT_MANIFEST.md`.
 
+## F09 (octubre 2026)
+
+Todo el arte de la vertical slice (guerreros, monstruos, vehículos, torre, Bosque, shaders y efectos) **lo genera el código** del proyecto (`Assets/Game/Scripts/Visual/`, `Assets/Game/Editor/SectorArtBuilder.cs`, `Assets/Game/Art/Shaders/`). No se ha importado ningún modelo, textura, animación ni fuente externos, así que no hay nada que registrar en la tabla. Si más adelante se importa algo (tarea F25.11), se añade aquí antes de importarlo.
+
 ## Blender Import Checklist
 
 1. Import `.fbx` or `.glb`.

@@ -35,5 +35,14 @@ namespace CodeLyokoFanGame.Data
         public float aimAssistAngle = 12f;
         public float aimAssistRange = 30f;
         public float lockOnHomingStrength = 4f;
+        [Tooltip("Seconds between the arrows of a burst (Odd).")]
+        public float burstInterval = 0.07f;
+
+        [Header("Boomerang fans (Yumi)")]
+        public int maxFans = 2;
+        public float fanRange = 12f;
+        public float fanSpeed = 20f;
+        [Tooltip("Sideways curve of the double throw (degrees).")]
+        public float fanSpread = 35f;
     }
 }

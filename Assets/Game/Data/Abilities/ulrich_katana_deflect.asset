@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2991f1c69ddc167419d104bca5a2fb5e, type: 3}
+  m_Name: ulrich_katana_deflect
+  m_EditorClassIdentifier: 
+  abilityId: ulrich_katana_deflect
+  displayName: Desvio con katana
+  owner: 1
+  description: Un laser desviado con la guardia en el momento justo vuelve contra
+    quien lo disparo.
+  icon: {fileID: 0}
+  slot: 3
+  kind: 1
+  cooldown: 0
+  resource: 0
+  cost: 0
+  duration: 0
+  power: 1.5
+  effectPrefab: {fileID: 0}
+  damage: 0
+  radius: 0
+  range: 0
+  speed: 0
+  count: 0
+  abilityHealth: 0
+  costPerSecond: 0
+  timeScale: 1
+  unlockChapter: 0
+  canon: 1

@@ -58,8 +58,12 @@ namespace CodeLyokoFanGame.EditorTools
             xanaWilliamEnemy.contactDamage = 45f;
 
             VehicleDefinition overboard = Vehicle("Overboard", VehicleStyle.Overboard, LyokoCharacter.Odd, 1.7f, true, false, true, "Odd's purple flying board. Highest agility.");
-            VehicleDefinition overbike = Vehicle("Overbike", VehicleStyle.Overbike, LyokoCharacter.Ulrich, 1.85f, true, false, true, "Ulrich's green one-wheel bike with flight capability.");
+            VehicleDefinition overbike = Vehicle("Overbike", VehicleStyle.Overbike, LyokoCharacter.Ulrich, 1.85f, false, false, true, "Ulrich's green one-wheel bike. Glued to the ground, the fastest; rams enemies.");
             VehicleDefinition overwing = Vehicle("Overwing", VehicleStyle.Overwing, LyokoCharacter.Yumi, 1.45f, true, true, true, "Yumi's stable hover-scooter. Best passenger vehicle.");
+            // F08 handling (speeds, turning, tricks, ram, passenger...) lives in VehicleDataBuilder.
+            VehicleDataBuilder.ApplyHandling(overboard);
+            VehicleDataBuilder.ApplyHandling(overbike);
+            VehicleDataBuilder.ApplyHandling(overwing);
             VehicleDefinition skid = Vehicle("Skidbladnir", VehicleStyle.Skidbladnir, LyokoCharacter.Aelita, 1.25f, true, true, false, "Team submarine for the Digital Sea.");
             skid.digitalSeaVehicle = true;
             VehicleDefinition navSkid = Vehicle("NavSkid", VehicleStyle.NavSkid, LyokoCharacter.Odd, 1.6f, true, false, false, "Individual Digital Sea pod launched from the Skidbladnir.");
@@ -97,6 +101,9 @@ namespace CodeLyokoFanGame.EditorTools
             SetWeakPointRules(guardian, false, 0f);
             SetWeakPointRules(kolossus, false, 0f);
 
+            // F06: Season 1 canon values, attacks and reactions (Biblia 8.1).
+            EnemyDataBuilder.ApplySeasonOne(kankrelat, blok, krab, hornet, megatank);
+
             // Abilities (Biblia del juego, seccion 5). Behaviour arrives in F05; this is the tunable data.
             AbilityDefinition oddShield = Ability("odd_shield", "Escudo", LyokoCharacter.Odd, AbilitySlot.Ability1, AbilityKind.Shield, 8f, AbilityResource.None, 0f, 4f, 2, true, "Escudo de energia violeta en el brazo. Bloquea laseres frontales y se rompe si recibe demasiado.");
             AbilityDefinition oddFutureFlash = Ability("odd_future_flash", "Vision del futuro", LyokoCharacter.Odd, AbilitySlot.Ability2, AbilityKind.Precognition, 20f, AbilityResource.None, 0f, 3f, 1, true, "Camara lenta y trayectorias de los disparos enemigos marcadas. Solo en el Capitulo 1 y en modo libre.");
@@ -115,9 +122,13 @@ namespace CodeLyokoFanGame.EditorTools
             AbilityDefinition williamSmoke = Ability("william_super_smoke", "Supernube", LyokoCharacter.William, AbilitySlot.Ability1, AbilityKind.Dash, 6f, AbilityResource.None, 0f, 1.5f, 4, true, "Se convierte en humo negro: desplazamiento rapido e invulnerable.");
             AbilityDefinition williamGuard = Ability("william_heavy_guard", "Bloqueo pesado", LyokoCharacter.William, AbilitySlot.Ability2, AbilityKind.Shield, 6f, AbilityResource.None, 0f, 3f, 4, false, "Aguanta casi cualquier golpe de frente.");
             AbilityDefinition williamTitan = Ability("william_titan_strike", "Golpe del Titan", LyokoCharacter.William, AbilitySlot.Ultimate, AbilityKind.AreaAttack, 0f, AbilityResource.SpecialMeter, 100f, 0.8f, 4, false, "Carga y tajo que parte enemigos con armadura.");
+            AbilityDefinition ulrichDeflect = Ability("ulrich_katana_deflect", "Desvio con katana", LyokoCharacter.Ulrich, AbilitySlot.Passive, AbilityKind.Shield, 0f, AbilityResource.None, 0f, 0f, 0, true, "Un laser desviado con la guardia en el momento justo vuelve contra quien lo disparo.");
+            AbilityDataBuilder.TuneAll(oddShield, oddFutureFlash, oddFelineRain, ulrichSprint, ulrichTriplicate, ulrichTriangulate, ulrichImpact, ulrichDeflect, yumiGrab, yumiWall, yumiFanDance, aelitaBridge, aelitaWall, aelitaWings);
+            AbilityDataBuilder.ApplyAttackDetails(odd, aelita);
+            AbilityDataBuilder.EnsureSquadProfile();
 
             SetAbilities(odd, oddShield, oddFutureFlash, oddClaws, oddFelineRain);
-            SetAbilities(ulrich, ulrichSprint, ulrichTriplicate, ulrichTriangulate, ulrichImpact);
+            SetAbilities(ulrich, ulrichSprint, ulrichTriplicate, ulrichTriangulate, ulrichImpact, ulrichDeflect);
             SetAbilities(yumi, yumiGrab, yumiWall, yumiFanDance);
             SetAbilities(aelita, aelitaBridge, aelitaWall, aelitaWings);
             SetAbilities(william, williamSmoke, williamGuard, williamTitan);
@@ -129,13 +140,14 @@ namespace CodeLyokoFanGame.EditorTools
             SectorDefinition sector5 = EnsureSector(SectorId.Sector5, "Sector 5 (Cartago)", new Color(0.3f, 0.55f, 1f), "", 0, "Laberinto que cambia, Cupula Celeste, Nucleo de Lyoko y Arena.");
             SectorDefinition digitalSea = EnsureSector(SectorId.DigitalSea, "Mar Digital", new Color(0.1f, 0.85f, 1f), "", 0, "Oceano de datos. Caer = devirtualizacion; en la T4 se navega con el Skidbladnir.");
 
+            LookBuilder.ApplySectorLooks(forestSector, desertSector, iceSector, mountainSector, sector5, digitalSea);
             MissionDefinition forestMission = EnsureForestMission();
 
             ChapterDefinition prologue = EnsureChapter(0, "Prologo: El despertar de X.A.N.A.", "Precuela", "Jeremie encuentra la fabrica, enciende el superordenador y descubre Lyoko, a Aelita y a X.A.N.A.");
             prologue.missions = new List<MissionDefinition>();
             prologue.unlockedCharacters = new List<LyokoCharacter> { LyokoCharacter.Odd, LyokoCharacter.Ulrich, LyokoCharacter.Yumi };
             prologue.unlockedSectors = new List<SectorDefinition> { forestSector };
-            prologue.unlockedAbilities = new List<AbilityDefinition> { ulrichSprint, yumiGrab, aelitaBridge, oddClaws };
+            prologue.unlockedAbilities = new List<AbilityDefinition> { ulrichSprint, ulrichDeflect, yumiGrab, aelitaBridge, oddClaws };
             EditorUtility.SetDirty(prologue);
 
             ChapterDefinition chapter1 = EnsureChapter(1, "Materializar a Aelita", "Temporada 1", "X.A.N.A. activa torres mientras Jeremie trabaja para traer a Aelita al mundo real; al final descubren el virus que la ata al superordenador.");
@@ -162,7 +174,7 @@ namespace CodeLyokoFanGame.EditorTools
             {
                 oddShield, oddFutureFlash, oddClaws, oddFelineRain, ulrichSprint, ulrichTriplicate, ulrichTriangulate,
                 ulrichImpact, yumiGrab, yumiWall, yumiFanDance, aelitaBridge, aelitaWall, aelitaWings,
-                williamSmoke, williamGuard, williamTitan
+                williamSmoke, williamGuard, williamTitan, ulrichDeflect
             });
             roster.sectors.Clear();
             roster.sectors.AddRange(new[] { forestSector, desertSector, iceSector, mountainSector, sector5, digitalSea });
@@ -258,22 +270,23 @@ namespace CodeLyokoFanGame.EditorTools
             mission.failedObjective = "Todos devirtualizados. Pulsa Reintentar (R / Y).";
             mission.steps = new List<MissionStep>
             {
-                Step(MissionPhase.Intro, "Jeremie: X.A.N.A. ha activado una torre. Entrad en Lyoko.", MissionStepCondition.Immediate, "", 0, 3f),
-                Step(MissionPhase.ReachBridge, "Llega al puente de datos y prueba los vehiculos.", MissionStepCondition.ReachMarker, "bridge", 0, 0f),
-                Step(MissionPhase.ClearCombatPlateau, "Limpia la plataforma de combate.", MissionStepCondition.EnemiesAtMost, "", 1, 0f),
-                Step(MissionPhase.EscortAelita, "Escolta a Aelita hasta la torre activada.", MissionStepCondition.ReachMarker, "tower", 0, 0f),
-                Step(MissionPhase.DefeatBoss, "Derrota al Megatank y protege a Aelita.", MissionStepCondition.EnemiesAtMost, "", 0, 0f),
-                Step(MissionPhase.DeactivateTower, "Manten Interactuar (E / RT) cerca de la torre para introducir CODE: LYOKO.", MissionStepCondition.TowerCleared, "", 0, 0f),
+                Step(MissionPhase.Intro, "Jeremie: X.A.N.A. ha activado una torre. Entrad en Lyoko.", MissionStepCondition.Immediate, "", 0, 3f, "start"),
+                Step(MissionPhase.ReachBridge, "Llega al puente de datos y prueba los vehiculos.", MissionStepCondition.ReachMarker, "bridge", 0, 0f, "start"),
+                Step(MissionPhase.ClearCombatPlateau, "Limpia la plataforma de combate.", MissionStepCondition.EnemiesAtMost, "", 1, 0f, "bridge"),
+                Step(MissionPhase.EscortAelita, "Escolta a Aelita hasta la torre activada (Z: ordenes a Aelita).", MissionStepCondition.ReachMarker, "tower", 0, 0f, "plateau"),
+                Step(MissionPhase.DefeatBoss, "Derrota al Megatank y protege a Aelita.", MissionStepCondition.EnemiesAtMost, "", 0, 0f, "tower"),
+                Step(MissionPhase.DeactivateTower, "Con Aelita junto a la torre, manten Interactuar (E / RT): entra y escribe CODE: LYOKO.", MissionStepCondition.TowerCleared, "", 0, 0f, "tower"),
                 Step(MissionPhase.Complete, "Torre desactivada. Retorno al pasado listo.", MissionStepCondition.Never, "", 0, 0f)
             };
             EditorUtility.SetDirty(mission);
             return mission;
         }
 
-        private static MissionStep Step(MissionPhase phase, string objective, MissionStepCondition condition, string markerId, int enemyThreshold, float minSeconds)
+        private static MissionStep Step(MissionPhase phase, string objective, MissionStepCondition condition, string markerId, int enemyThreshold, float minSeconds, string checkpointId = "")
         {
             return new MissionStep
             {
+                checkpointId = checkpointId,
                 phase = phase,
                 objective = objective,
                 condition = condition,
@@ -370,13 +383,13 @@ namespace CodeLyokoFanGame.EditorTools
             return definition;
         }
 
-        private static VehicleDefinition Vehicle(string assetName, VehicleStyle style, LyokoCharacter rider, float speedMultiplier, bool canFly, bool passenger, bool slice, string notes)
+        private static VehicleDefinition Vehicle(string assetName, VehicleStyle style, LyokoCharacter rider, float boostMultiplier, bool canFly, bool passenger, bool slice, string notes)
         {
             VehicleDefinition definition = LoadOrCreate<VehicleDefinition>("Vehicles/" + assetName);
             definition.style = style;
             definition.displayName = assetName;
             definition.defaultRider = rider;
-            definition.speedMultiplier = speedMultiplier;
+            definition.boostMultiplier = boostMultiplier;
             definition.canFly = canFly;
             definition.canCarryPassenger = passenger;
             definition.appearsInVerticalSlice = slice;

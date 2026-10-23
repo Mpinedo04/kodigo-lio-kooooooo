@@ -642,15 +642,15 @@ Configurados en `Assets/Game/Input/LyokoControls.inputactions` (F02). **[Hecho]*
 | Esquivar | `Ctrl` | B / ○ | [Hecho] |
 | Ataque básico (combos; mantener = cargado) | Clic izq. | X / □ | [Hecho] |
 | Ataque especial | Clic der. | Y / △ | [Hecho] |
-| Habilidad 1 | `Q` | LB / L1 | [Tecla lista] F05 |
-| Habilidad 2 | `F` | RB / R1 | [Tecla lista] F05 |
-| Definitiva | `X` | LB + RB / L1 + R1 | [Tecla lista] F05 |
+| Habilidad 1 | `Q` | LB / L1 | [Hecho] |
+| Habilidad 2 | `F` | RB / R1 | [Hecho] |
+| Definitiva | `X` | LB + RB / L1 + R1 | [Hecho] |
 | Guardia / desvío | `C` | LT / L2 | [Hecho] |
 | Fijar objetivo | `Tab` | R3 | [Hecho] |
 | Vehículo | `V` | Cruceta arriba | [Hecho] |
 | Interactuar / torre | `E` (mantener) | RT / R2 (mantener) | [Hecho] |
-| Cambiar personaje | `1` `2` `3` `4` | Cruceta izq. / der. | [Hecho] (3 guerreros) |
-| Órdenes a Aelita | `Z` | Cruceta abajo | [Tecla lista] F07 |
+| Cambiar personaje | `1` `2` `3` `4` | Cruceta izq. / der. | [Hecho] (los demás siguen con IA) |
+| Órdenes a Aelita (pulsar = siguiente; mantener = rueda) | `Z` | Cruceta abajo | [Hecho] |
 | Abrir Operador | `O` | Select / Share | [Tecla lista] F13 |
 | Cambiar Lyoko ↔ Tierra | `G` | — | [Tecla lista] F16 |
 
@@ -663,6 +663,9 @@ Configurados en `Assets/Game/Input/LyokoControls.inputactions` (F02). **[Hecho]*
 | Turbo | `Shift` | RT / R2 | [Hecho] |
 | Disparar | Clic izq. | X / □ | [Hecho] |
 | Bajarse | `V` | Cruceta arriba | [Hecho] |
+| Truco (llena energía especial) | `C` | LT / L2 | [Hecho] |
+| Subir o bajar a Aelita (Overwing) | `E` | Cruceta abajo | [Hecho] |
+| Overbike: salto / derrape | `Space` / `Ctrl` | A / B | [Hecho] |
 
 **Interfaz (mapa `UI`)**
 

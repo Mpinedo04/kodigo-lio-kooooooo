@@ -42,6 +42,8 @@ namespace CodeLyokoFanGame
         private InputAction boost;
         private InputAction fire;
         private InputAction dismount;
+        private InputAction trick;
+        private InputAction passenger;
 
         private InputAction pause;
         private InputAction retry;
@@ -84,6 +86,7 @@ namespace CodeLyokoFanGame
         public bool NextCharacterPressed => Pressed(nextCharacter);
         public bool PreviousCharacterPressed => Pressed(previousCharacter);
         public bool OrderAelitaPressed => Pressed(orderAelita);
+        public bool OrderAelitaHeld => Held(orderAelita);
         public bool OpenOperatorPressed => Pressed(openOperator);
         public bool SwapFrontPressed => Pressed(swapFront);
 
@@ -108,10 +111,13 @@ namespace CodeLyokoFanGame
         // Vehicle (mounted)
         public Vector2 Steer => Read(steer);
         public bool AscendHeld => Held(ascend);
+        public bool AscendPressed => Pressed(ascend);
         public bool DescendHeld => Held(descend);
         public bool BoostHeld => Held(boost);
         public bool FirePressed => Pressed(fire);
         public bool DismountPressed => Pressed(dismount);
+        public bool TrickPressed => Pressed(trick);
+        public bool PassengerPressed => Pressed(passenger);
 
         // UI
         public bool PausePressed => Pressed(pause);
@@ -196,6 +202,8 @@ namespace CodeLyokoFanGame
             boost = Find(vehicleMap, "Boost");
             fire = Find(vehicleMap, "Fire");
             dismount = Find(vehicleMap, "Dismount");
+            trick = Find(vehicleMap, "Trick");
+            passenger = Find(vehicleMap, "Passenger");
 
             pause = Find(uiMap, "Pause");
             retry = Find(uiMap, "Retry");

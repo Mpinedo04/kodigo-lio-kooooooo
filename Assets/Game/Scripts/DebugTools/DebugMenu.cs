@@ -67,9 +67,15 @@ namespace CodeLyokoFanGame
                 KillAllEnemies();
             }
 
-            if (GUILayout.Button("Llenar energia especial"))
+            if (GUILayout.Button("Llenar energia especial, concentracion y vuelo"))
             {
                 FillSpecialMeters();
+            }
+
+            bool unlockAbilities = GUILayout.Toggle(AbilityController.UnlockAllOverride, " Desbloquear todas las habilidades");
+            if (unlockAbilities != AbilityController.UnlockAllOverride)
+            {
+                AbilityController.UnlockAllOverride = unlockAbilities;
             }
 
             bool damageNumbers = GUILayout.Toggle(GameSettings.ShowDamageNumbers, " Numeros de dano");
@@ -138,6 +144,11 @@ namespace CodeLyokoFanGame
             }
 
             GUILayout.EndHorizontal();
+
+            if (GUILayout.Button("Grupo mixto (3 Kankrelats + Blok + Hornet)"))
+            {
+                EnemyFactory.SpawnGroup(EnemyFactory.MixedTestGroup, SpawnPosition(), 5f, FindEnemyProjectile(), 0.9f);
+            }
         }
 
         private void DrawHealthList()
@@ -179,6 +190,13 @@ namespace CodeLyokoFanGame
             {
                 meters[i].Add(meters[i].Max);
             }
+
+            AbilityController[] abilities = FindObjectsOfType<AbilityController>(true);
+            for (int i = 0; i < abilities.Length; i++)
+            {
+                abilities[i].Concentration?.Fill();
+                abilities[i].FlightEnergy?.Fill();
+            }
         }
 
         private static void KillAllEnemies()
@@ -196,13 +214,16 @@ namespace CodeLyokoFanGame
 
         private static void Spawn(EnemyKind kind)
         {
+            EnemyFactory.Spawn(EnemyCatalog.Find(kind), kind, SpawnPosition(), FindEnemyProjectile(), 0.6f);
+        }
+
+        private static Vector3 SpawnPosition()
+        {
             CharacterSwitcher switcher = FindObjectOfType<CharacterSwitcher>();
             PlayerController player = switcher != null ? switcher.ActiveCharacter : null;
-            Vector3 position = player != null
+            return player != null
                 ? player.transform.position + player.transform.forward * 8f + Vector3.up * 1.4f
                 : Vector3.up * 2f;
-
-            EnemyFactory.CreatePlaceholder(null, kind, position, FindEnemyProjectile());
         }
 
         private static Projectile FindEnemyProjectile()

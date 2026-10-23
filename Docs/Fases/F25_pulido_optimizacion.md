@@ -20,6 +20,7 @@
 - [ ] **F25.8** Accesibilidad: subtítulos grandes, modo daltónico para los halos de las torres, reasignar todos los controles.
 - [ ] **F25.9** Pulido de sensaciones: más efectos de impacto, sonidos, animaciones de transición.
 - [ ] **F25.10** Pruebas de guardado (cargar partidas viejas, guardado en mitad de misión, ranuras llenas).
+- [ ] **F25.11** (Opcional) **Arte final hecho a mano**: cambiar los modelos generados por código de F09 por modelos de Blender o importados con licencia (malla final, UV, texturas, rig *Humanoid*, clips de animación y `Animator Controller` con *Blend Tree*). Registrar cada uno en `Assets/ArtSources/ASSET_SOURCES.md`.
 
 ---
 

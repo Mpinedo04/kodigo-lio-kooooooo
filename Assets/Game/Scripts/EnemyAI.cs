@@ -1,63 +1,292 @@
+using System.Collections.Generic;
 using UnityEngine;
 using CodeLyokoFanGame.Data;
 
 namespace CodeLyokoFanGame
 {
+    // The monster component everything else talks to (lock-on, aim assist, missions, abilities).
+    // Thin host: the state machine is EnemyBrain, per-monster rules are EnemyBehaviour (Enemies/).
     [RequireComponent(typeof(Health))]
     public sealed class EnemyAI : MonoBehaviour, IKnockbackReceiver
     {
+        private static readonly List<EnemyAI> Active = new List<EnemyAI>();
+
         [SerializeField] private EnemyDefinition definition;
         [SerializeField] private EnemyKind kind = EnemyKind.Kankrelat;
-        [SerializeField] private EnemyBehaviorStyle behaviorStyle = EnemyBehaviorStyle.SwarmShooter;
         [SerializeField] private Projectile projectilePrefab;
         [SerializeField] private Transform firePoint;
         [SerializeField] private Transform aimPoint;
         [SerializeField] private WeakPoint weakPoint;
-        [SerializeField] private float detectionRange = 24f;
-        [SerializeField] private float attackRange = 18f;
-        [SerializeField] private float moveSpeed = 3f;
-        [SerializeField] private float projectileDamage = 10f;
-        [SerializeField] private float fireCooldown = 1.2f;
-        [SerializeField] private float specialCooldown = 4f;
-        [SerializeField] private float contactDamage;
-        [SerializeField] private float hoverHeight;
-        [SerializeField] private bool weakPointAlwaysExposed = true;
+        [Tooltip("Main body mesh: rolls, opens, falls (optional).")]
+        [SerializeField] private Transform bodyVisual;
 
-        private Transform player;
-        private Vector3 spawnPosition;
-        private float fireTimer;
-        private float specialTimer;
-        private float weakPointExposeTimer;
-        private float weakPointMultiplier = 2.5f;
-        private bool weakPointInstantKill;
-        private float knockbackScale = 1f;
-        private Vector3 knockbackVelocity;
-        private float contactTimer;
-        private const float ContactCooldown = 1f;
+        private Health health;
+        private EnemyDefinition activeDefinition;
+        private EnemyDefinition runtimeFallback;
+        private EnemyBehaviour behaviour;
+        private EnemyMotor motor;
+        private EnemyBrain brain;
+        private EnemyTelegraph telegraph;
+        private bool initialized;
+        private bool started;
+        private bool subscribed;
+        private bool lastExposed;
+        private float forcedExposeTimer;
+
+        public static IReadOnlyList<EnemyAI> All => Active;
 
         public EnemyKind Kind => kind;
         public Transform AimPoint => aimPoint;
+        public Transform FirePoint => firePoint;
         public Projectile ProjectilePrefab => projectilePrefab;
+        public Transform BodyVisual => bodyVisual;
+        public WeakPoint WeakPoint => weakPoint;
+        public Health Health => health != null ? health : health = GetComponent<Health>();
+        public EnemyDefinition Definition
+        {
+            get
+            {
+                EnsureInitialized();
+                return activeDefinition;
+            }
+        }
+
+        public EnemyStateId CurrentState => brain != null ? brain.State : EnemyStateId.Idle;
+        public Health Target => brain != null ? brain.Target : null;
+        public bool IsAttacking => brain != null && brain.IsAttacking;
+        public bool IsDead => Health == null || Health.IsDead || CurrentState == EnemyStateId.Dead;
+        // Monsters built without a projectile (lock-on dummies) never attack.
+        public bool IsArmed => projectilePrefab != null;
+        public bool IsSuspended { get; private set; }
+        public bool IsMaterializing { get; private set; }
+        public bool CanBeLifted => Definition != null && Definition.liftableByTelekinesis && !IsDead;
+        public bool IsWeakPointForced => forcedExposeTimer > 0f;
+        public bool IsGuarded => behaviour != null && behaviour.IsGuarded;
+
+        internal EnemyBrain Brain
+        {
+            get
+            {
+                EnsureInitialized();
+                return brain;
+            }
+        }
+
+        internal EnemyTelegraph Telegraph => telegraph;
+
+        // ---- Setup ----------------------------------------------------------------------------------
 
         public void Configure(EnemyDefinition newDefinition, Projectile projectile)
         {
             definition = newDefinition;
+            if (definition != null)
+            {
+                kind = definition.kind;
+            }
+
             projectilePrefab = projectile;
-            ApplyDefinition(definition);
-            ConfigureWeakPoint();
+            Reinitialize();
         }
 
         public void Configure(EnemyKind newKind, Projectile projectile)
         {
             kind = newKind;
+            definition = EnemyCatalog.Find(newKind);
             projectilePrefab = projectile;
-            ApplyKindStats();
-            ConfigureWeakPoint();
+            Reinitialize();
         }
+
+        public void SetAnchors(Transform fire, Transform aim)
+        {
+            firePoint = fire != null ? fire : transform;
+            aimPoint = aim != null ? aim : transform;
+        }
+
+        public void SetBodyVisual(Transform body)
+        {
+            bodyVisual = body;
+        }
+
+        public Transform FindPart(string partName)
+        {
+            return transform.Find(partName);
+        }
+
+        // ---- Abilities and synergies (F05) --------------------------------------------------------------
+
+        // Stunned for that long (no movement, no attacks). Scaled by EnemyDefinition.staggerMultiplier (0 = immune).
+        public void Stagger(float seconds)
+        {
+            EnsureInitialized();
+            float scaled = seconds * Mathf.Max(0f, activeDefinition.staggerMultiplier);
+            if (scaled > 0f)
+            {
+                brain.Stagger(scaled, false);
+            }
+        }
+
+        // Yumi's telekinesis: the brain pauses and external code moves the transform freely.
+        // On release ground units fall, land and snap back onto the NavMesh.
+        public void SetSuspended(bool suspended)
+        {
+            EnsureInitialized();
+            if (IsSuspended == suspended || IsDead)
+            {
+                return;
+            }
+
+            if (suspended)
+            {
+                brain.Interrupt();
+                telegraph.End();
+                CombatDirector director = CombatDirector.Current;
+                if (director != null)
+                {
+                    director.EndAttack(this);
+                }
+            }
+
+            IsSuspended = suspended;
+            motor.SetSuspended(suspended);
+            behaviour.OnSuspended(suspended);
+        }
+
+        // Forces the eye of X.A.N.A. open (team synergies cracking a Megatank).
+        public void ExposeWeakPoint(float seconds)
+        {
+            EnsureInitialized();
+            forcedExposeTimer = Mathf.Max(forcedExposeTimer, seconds);
+            UpdateWeakPoint();
+        }
+
+        // Makes an idle monster go after a target (ally warnings, scripted events). False if it already has one.
+        public bool Alert(Health target)
+        {
+            EnsureInitialized();
+            return brain.Alert(target);
+        }
+
+        public void ApplyKnockback(Vector3 velocity)
+        {
+            EnsureInitialized();
+            if (!IsMaterializing)
+            {
+                motor.AddKnockback(velocity * activeDefinition.knockbackScale);
+            }
+        }
+
+        internal void SetMaterializing(bool value)
+        {
+            EnsureInitialized();
+            IsMaterializing = value;
+        }
+
+        internal void NotifyPartDamaged(DamageInfo info)
+        {
+            EnsureInitialized();
+            brain.NotifyDamaged(info);
+        }
+
+        // Advances the monster by hand (EditMode tests).
+        internal void Tick(float deltaTime)
+        {
+            EnsureInitialized();
+            if (IsDead)
+            {
+                return;
+            }
+
+            forcedExposeTimer = Mathf.Max(0f, forcedExposeTimer - deltaTime);
+            telegraph.Tick(deltaTime);
+            brain.Tick(deltaTime);
+            if (!brain.Paused)
+            {
+                behaviour.Tick(deltaTime);
+            }
+
+            motor.Tick(deltaTime);
+            UpdateWeakPoint();
+        }
+
+        // ---- Unity ------------------------------------------------------------------------------------
 
         private void Awake()
         {
-            spawnPosition = transform.position;
+            Health.SetTeam(Team.Enemy);
+            Subscribe();
+        }
+
+        private void OnEnable()
+        {
+            if (!Active.Contains(this))
+            {
+                Active.Add(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            Active.Remove(this);
+            CombatDirector director = CombatDirector.Current;
+            if (director != null)
+            {
+                director.Forget(this);
+            }
+        }
+
+        private void Start()
+        {
+            EnsureInitialized();
+            motor.Initialize();
+            started = true;
+        }
+
+        private void Update()
+        {
+            Tick(Time.deltaTime);
+        }
+
+        private void OnDestroy()
+        {
+            Unsubscribe();
+            if (telegraph != null)
+            {
+                telegraph.End();
+            }
+
+            DestroyFallback();
+        }
+
+        // ---- Internals ----------------------------------------------------------------------------------
+
+        private void EnsureInitialized()
+        {
+            if (!initialized)
+            {
+                Initialize();
+            }
+        }
+
+        private void Reinitialize()
+        {
+            if (initialized)
+            {
+                brain.Dispose();
+                behaviour.OnDeath();
+                initialized = false;
+            }
+
+            Initialize();
+            if (started)
+            {
+                motor.Initialize();
+            }
+        }
+
+        private void Initialize()
+        {
+            initialized = true;
+            Subscribe();
 
             if (firePoint == null)
             {
@@ -69,562 +298,142 @@ namespace CodeLyokoFanGame
                 aimPoint = transform;
             }
 
-            ApplyKindStats();
-            ApplyDefinition(definition);
-            Health health = GetComponent<Health>();
-            health.SetTeam(Team.Enemy);
-            health.Died += OnDied;
-            ConfigureWeakPoint();
-        }
-
-        private DamageInfo ContactHit(float amount)
-        {
-            return new DamageInfo
+            activeDefinition = definition;
+            if (activeDefinition == null)
             {
-                amount = amount,
-                type = DamageType.Melee,
-                source = gameObject,
-                sourceTeam = Team.Enemy,
-                direction = player != null ? player.position - transform.position : transform.forward,
-                knockback = 4f
-            };
-        }
+                DestroyFallback();
+                runtimeFallback = EnemyDefaults.CreateRuntime(kind);
+                activeDefinition = runtimeFallback;
+            }
+            else
+            {
+                kind = activeDefinition.kind;
+                EnemyCatalog.Register(activeDefinition);
+            }
 
-        public void SetAnchors(Transform fire, Transform aim)
-        {
-            firePoint = fire != null ? fire : transform;
-            aimPoint = aim != null ? aim : transform;
-        }
+            Health.SetTeam(Team.Enemy);
+            Health.SetMaxHealth(activeDefinition.maxHealth);
+            ConfigureWeakPoint();
 
-        public void ApplyKnockback(Vector3 velocity)
-        {
-            knockbackVelocity += velocity * knockbackScale;
+            telegraph = new EnemyTelegraph(this);
+            telegraph.Bind(weakPoint != null ? weakPoint.GetComponent<Renderer>() : null);
+            motor = new EnemyMotor(this, activeDefinition.flying);
+            behaviour = EnemyBehaviour.Create(kind);
+            brain = new EnemyBrain(this, behaviour, motor, new EnemyPerception(this));
+            behaviour.Bind(this, brain, motor);
+            lastExposed = !behaviour.IsEyeExposed;
+            UpdateWeakPoint();
         }
 
         private void ConfigureWeakPoint()
         {
             if (weakPoint == null)
             {
-                weakPoint = GetComponentInChildren<WeakPoint>();
+                weakPoint = GetComponentInChildren<WeakPoint>(true);
             }
 
-            if (weakPoint != null)
+            if (weakPoint == null)
             {
-                weakPoint.Configure(weakPointMultiplier, weakPointAlwaysExposed, weakPointInstantKill);
-            }
-        }
-
-        private void ApplyKnockbackMotion()
-        {
-            if (knockbackVelocity.sqrMagnitude < 0.01f)
-            {
-                knockbackVelocity = Vector3.zero;
                 return;
             }
 
-            transform.position += knockbackVelocity * Time.deltaTime;
-            knockbackVelocity = Vector3.MoveTowards(knockbackVelocity, Vector3.zero, 30f * Time.deltaTime);
+            if (weakPoint.Target == null)
+            {
+                weakPoint.SetTarget(Health);
+            }
+
+            weakPoint.Configure(activeDefinition.weakPointDamageMultiplier, activeDefinition.weakPointAlwaysExposed, activeDefinition.weakPointInstantKill);
         }
 
-        private void OnDied(Health health)
+        private void UpdateWeakPoint()
         {
+            if (weakPoint == null || behaviour == null || brain == null)
+            {
+                return;
+            }
+
+            bool exposed = !IsDead && (behaviour.IsEyeExposed || forcedExposeTimer > 0f || (brain.IsStaggered && brain.StaggerCracked));
+            if (exposed != lastExposed || exposed != weakPoint.IsExposed)
+            {
+                lastExposed = exposed;
+                weakPoint.SetExposed(exposed);
+            }
+        }
+
+        private void Subscribe()
+        {
+            if (subscribed || Health == null)
+            {
+                return;
+            }
+
+            subscribed = true;
+            Health.Damaged += OnDamaged;
+            Health.Died += OnDied;
+        }
+
+        private void Unsubscribe()
+        {
+            if (!subscribed || health == null)
+            {
+                return;
+            }
+
+            subscribed = false;
+            health.Damaged -= OnDamaged;
+            health.Died -= OnDied;
+        }
+
+        // Heavy hits stagger small and medium monsters and crack the guard of guarded ones.
+        private void OnDamaged(Health damaged, DamageInfo info)
+        {
+            EnsureInitialized();
+            brain.NotifyDamaged(info);
+            if (!info.isHeavy || IsDead)
+            {
+                return;
+            }
+
+            if (behaviour.IsGuarded && activeDefinition.guardCrackDuration > 0f)
+            {
+                brain.Stagger(activeDefinition.guardCrackDuration, true);
+            }
+            else if (activeDefinition.heavyHitStagger > 0f)
+            {
+                Stagger(activeDefinition.heavyHitStagger);
+            }
+        }
+
+        private void OnDied(Health dead)
+        {
+            EnsureInitialized();
+            brain.Die();
+            if (weakPoint != null)
+            {
+                weakPoint.SetExposed(false);
+            }
+
             GameManager.RaiseEvent(GameEventId.EnemyKilled);
+            EnemyDevirtualize.Spawn(this, activeDefinition.dataDrop);
         }
 
-        private void Update()
+        private void DestroyFallback()
         {
-            fireTimer -= Time.deltaTime;
-            specialTimer -= Time.deltaTime;
-            weakPointExposeTimer -= Time.deltaTime;
-            contactTimer -= Time.deltaTime;
-            AcquirePlayer();
-            UpdateWeakPointExposure();
-            ApplyKnockbackMotion();
-
-            if (player == null)
-            {
-                Patrol();
-                return;
-            }
-
-            Vector3 toPlayer = player.position - transform.position;
-            float distance = toPlayer.magnitude;
-            Vector3 flatDirection = Vector3.ProjectOnPlane(toPlayer, Vector3.up).normalized;
-
-            if (flatDirection.sqrMagnitude > 0.001f)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(flatDirection), Time.deltaTime * 8f);
-            }
-
-            Vector3 aimDirection = (player.position + Vector3.up - firePoint.position).normalized;
-            TickBehavior(distance, flatDirection, aimDirection);
-        }
-
-        private void AcquirePlayer()
-        {
-            GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-            float best = detectionRange * detectionRange;
-            Transform bestTarget = null;
-
-            for (int i = 0; i < players.Length; i++)
-            {
-                if (!players[i].activeInHierarchy)
-                {
-                    continue;
-                }
-
-                float distance = Vector3.SqrMagnitude(players[i].transform.position - transform.position);
-                if (distance < best)
-                {
-                    best = distance;
-                    bestTarget = players[i].transform;
-                }
-            }
-
-            player = bestTarget;
-        }
-
-        private void Patrol()
-        {
-            Vector3 orbit = spawnPosition + new Vector3(Mathf.Sin(Time.time * 0.45f), 0f, Mathf.Cos(Time.time * 0.45f)) * 2.2f;
-            transform.position = Vector3.MoveTowards(transform.position, orbit, moveSpeed * 0.45f * Time.deltaTime);
-        }
-
-        private void Fire(Vector3 direction)
-        {
-            if (projectilePrefab == null)
+            if (runtimeFallback == null)
             {
                 return;
             }
 
-            fireTimer = fireCooldown;
-            Projectile projectile = PrefabPool.Spawn(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
-            bool heavy = kind == EnemyKind.Megatank || kind == EnemyKind.Kolossus;
-            DamageInfo info = new DamageInfo
+            if (Application.isPlaying)
             {
-                amount = projectileDamage,
-                type = DamageType.Laser,
-                source = gameObject,
-                sourceTeam = Team.Enemy,
-                knockback = heavy ? 8f : 0f,
-                isHeavy = heavy
-            };
-            projectile.Launch(gameObject, Team.Enemy, direction, info, player, kind == EnemyKind.Hornet ? 2.5f : 0f);
-        }
-
-        private void TickBehavior(float distance, Vector3 flatDirection, Vector3 aimDirection)
-        {
-            switch (behaviorStyle)
-            {
-                case EnemyBehaviorStyle.Turret:
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.ArmoredBurst:
-                    MoveIfFar(distance, flatDirection, attackRange * 0.78f);
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        weakPointExposeTimer = 1.15f;
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.EliteShooter:
-                    Strafe(flatDirection);
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.Ambusher:
-                    MoveIfFar(distance, flatDirection, 2.2f);
-                    if (distance <= 3f)
-                    {
-                        DamagePlayer(contactDamage > 0f ? contactDamage : projectileDamage);
-                    }
-                    break;
-                case EnemyBehaviorStyle.MineLayer:
-                    Hover();
-                    Strafe(flatDirection);
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    if (specialTimer <= 0f)
-                    {
-                        specialTimer = specialCooldown;
-                        Fire(-transform.forward + Vector3.down * 0.15f);
-                    }
-                    break;
-                case EnemyBehaviorStyle.DigitalSeaChaser:
-                    Hover();
-                    MoveIfFar(distance, flatDirection, 4f);
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.Grappler:
-                    Hover();
-                    MoveIfFar(distance, flatDirection, 1.5f);
-                    if (distance <= 2.8f)
-                    {
-                        DamagePlayer(contactDamage > 0f ? contactDamage : projectileDamage);
-                    }
-                    break;
-                case EnemyBehaviorStyle.CaptureField:
-                    MoveIfFar(distance, flatDirection, 3.5f);
-                    if (distance <= 4f)
-                    {
-                        DamagePlayer(projectileDamage * 0.4f);
-                    }
-                    break;
-                case EnemyBehaviorStyle.MemoryDrainer:
-                    Hover();
-                    MoveIfFar(distance, flatDirection, 2.8f);
-                    if (distance <= 3.4f)
-                    {
-                        DamagePlayer(projectileDamage);
-                    }
-                    break;
-                case EnemyBehaviorStyle.RaidBoss:
-                    MoveIfFar(distance, flatDirection, attackRange * 0.85f);
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        weakPointExposeTimer = 1.8f;
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.Duelist:
-                    MoveIfFar(distance, flatDirection, 2.6f);
-                    if (distance <= 3.5f)
-                    {
-                        DamagePlayer(contactDamage > 0f ? contactDamage : projectileDamage);
-                    }
-                    else if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    break;
-                case EnemyBehaviorStyle.Exploder:
-                    MoveIfFar(distance, flatDirection, 1.2f);
-                    if (distance <= 2f)
-                    {
-                        DamagePlayerInstant(projectileDamage * 2f);
-                        Health health = GetComponent<Health>();
-                        if (health != null)
-                        {
-                            health.TakeDamage(health.Current, gameObject);
-                        }
-                    }
-                    break;
-                default:
-                    MoveIfFar(distance, flatDirection, attackRange * 0.65f);
-                    Hover();
-                    if (distance <= attackRange && fireTimer <= 0f)
-                    {
-                        Fire(aimDirection);
-                    }
-                    break;
+                Destroy(runtimeFallback);
             }
-        }
-
-        private void DamagePlayerInstant(float amount)
-        {
-            if (player == null || amount <= 0f)
+            else
             {
-                return;
+                DestroyImmediate(runtimeFallback);
             }
 
-            Health health = player.GetComponent<Health>();
-            if (health != null)
-            {
-                health.TakeDamage(ContactHit(amount));
-            }
-        }
-
-        private void MoveIfFar(float distance, Vector3 flatDirection, float desiredDistance)
-        {
-            if (distance > desiredDistance)
-            {
-                transform.position += flatDirection * moveSpeed * Time.deltaTime;
-            }
-        }
-
-        private void Strafe(Vector3 flatDirection)
-        {
-            Vector3 strafe = Vector3.Cross(Vector3.up, flatDirection).normalized;
-            transform.position += (flatDirection * 0.35f + strafe * Mathf.Sin(Time.time * 1.7f)) * moveSpeed * Time.deltaTime;
-            Hover();
-        }
-
-        private void Hover()
-        {
-            if (hoverHeight > 0f)
-            {
-                transform.position = new Vector3(transform.position.x, hoverHeight + Mathf.Sin(Time.time * 2.4f) * 0.35f, transform.position.z);
-            }
-        }
-
-        private void DamagePlayer(float amount)
-        {
-            if (player == null || amount <= 0f)
-            {
-                return;
-            }
-
-            if (contactTimer > 0f)
-            {
-                return;
-            }
-
-            contactTimer = ContactCooldown;
-            Health health = player.GetComponent<Health>();
-            if (health != null)
-            {
-                health.TakeDamage(ContactHit(amount));
-            }
-        }
-
-        private void UpdateWeakPointExposure()
-        {
-            if (weakPoint == null)
-            {
-                ConfigureWeakPoint();
-            }
-
-            if (weakPoint != null)
-            {
-                weakPoint.SetExposed(weakPointAlwaysExposed || weakPointExposeTimer > 0f);
-            }
-        }
-
-        private void ApplyDefinition(EnemyDefinition enemyDefinition)
-        {
-            if (enemyDefinition == null)
-            {
-                return;
-            }
-
-            kind = enemyDefinition.kind;
-            behaviorStyle = enemyDefinition.behaviorStyle;
-            detectionRange = enemyDefinition.detectionRange;
-            attackRange = enemyDefinition.attackRange;
-            moveSpeed = enemyDefinition.moveSpeed;
-            projectileDamage = enemyDefinition.projectileDamage;
-            fireCooldown = enemyDefinition.fireCooldown;
-            specialCooldown = enemyDefinition.specialCooldown;
-            contactDamage = enemyDefinition.contactDamage;
-            hoverHeight = enemyDefinition.hoverHeight;
-            weakPointAlwaysExposed = enemyDefinition.weakPointAlwaysExposed;
-            weakPointMultiplier = enemyDefinition.weakPointDamageMultiplier;
-            weakPointInstantKill = enemyDefinition.weakPointInstantKill;
-            knockbackScale = enemyDefinition.knockbackScale;
-
-            Health health = GetComponent<Health>();
-            if (health != null)
-            {
-                health.SetMaxHealth(enemyDefinition.maxHealth);
-            }
-
-            if (weakPoint == null)
-            {
-                weakPoint = GetComponentInChildren<WeakPoint>();
-            }
-
-            if (weakPoint != null)
-            {
-                weakPoint.Configure(enemyDefinition.weakPointDamageMultiplier, weakPointAlwaysExposed, enemyDefinition.weakPointInstantKill);
-            }
-        }
-
-        private void ApplyKindStats()
-        {
-            Health health = GetComponent<Health>();
-            float maxHealth = 60f;
-            behaviorStyle = EnemyBehaviorStyle.SwarmShooter;
-            weakPointAlwaysExposed = true;
-
-            switch (kind)
-            {
-                case EnemyKind.Blok:
-                    maxHealth = 85f;
-                    behaviorStyle = EnemyBehaviorStyle.Turret;
-                    detectionRange = 26f;
-                    attackRange = 20f;
-                    moveSpeed = 1.8f;
-                    projectileDamage = 14f;
-                    fireCooldown = 1f;
-                    break;
-                case EnemyKind.Krab:
-                    maxHealth = 120f;
-                    behaviorStyle = EnemyBehaviorStyle.HeavyWalker;
-                    detectionRange = 28f;
-                    attackRange = 18f;
-                    moveSpeed = 3.2f;
-                    projectileDamage = 18f;
-                    fireCooldown = 1.15f;
-                    break;
-                case EnemyKind.Hornet:
-                    maxHealth = 55f;
-                    behaviorStyle = EnemyBehaviorStyle.FlyingShooter;
-                    detectionRange = 30f;
-                    attackRange = 22f;
-                    moveSpeed = 4.8f;
-                    projectileDamage = 12f;
-                    fireCooldown = 0.72f;
-                    hoverHeight = 4.5f;
-                    break;
-                case EnemyKind.Megatank:
-                    maxHealth = 260f;
-                    behaviorStyle = EnemyBehaviorStyle.ArmoredBurst;
-                    weakPointAlwaysExposed = false;
-                    detectionRange = 34f;
-                    attackRange = 24f;
-                    moveSpeed = 1.4f;
-                    projectileDamage = 34f;
-                    fireCooldown = 2.4f;
-                    break;
-                case EnemyKind.Tarantula:
-                    maxHealth = 150f;
-                    behaviorStyle = EnemyBehaviorStyle.EliteShooter;
-                    detectionRange = 32f;
-                    attackRange = 25f;
-                    moveSpeed = 2.8f;
-                    projectileDamage = 22f;
-                    fireCooldown = 0.8f;
-                    break;
-                case EnemyKind.Creeper:
-                    maxHealth = 75f;
-                    behaviorStyle = EnemyBehaviorStyle.Ambusher;
-                    detectionRange = 22f;
-                    attackRange = 12f;
-                    moveSpeed = 5.2f;
-                    projectileDamage = 18f;
-                    contactDamage = 32f;
-                    break;
-                case EnemyKind.Manta:
-                case EnemyKind.BlackManta:
-                    maxHealth = kind == EnemyKind.BlackManta ? 180f : 120f;
-                    behaviorStyle = EnemyBehaviorStyle.MineLayer;
-                    detectionRange = 34f;
-                    attackRange = 25f;
-                    moveSpeed = 4.2f;
-                    projectileDamage = 18f;
-                    fireCooldown = 1.1f;
-                    hoverHeight = 5.2f;
-                    break;
-                case EnemyKind.Kongre:
-                case EnemyKind.Shark:
-                    maxHealth = kind == EnemyKind.Shark ? 120f : 90f;
-                    behaviorStyle = EnemyBehaviorStyle.DigitalSeaChaser;
-                    detectionRange = 34f;
-                    attackRange = 18f;
-                    moveSpeed = 5f;
-                    projectileDamage = kind == EnemyKind.Shark ? 24f : 16f;
-                    hoverHeight = 2.6f;
-                    break;
-                case EnemyKind.Kalamar:
-                    maxHealth = 190f;
-                    behaviorStyle = EnemyBehaviorStyle.Grappler;
-                    detectionRange = 30f;
-                    attackRange = 10f;
-                    moveSpeed = 3.4f;
-                    projectileDamage = 26f;
-                    contactDamage = 42f;
-                    hoverHeight = 3.2f;
-                    break;
-                case EnemyKind.Guardian:
-                    maxHealth = 220f;
-                    behaviorStyle = EnemyBehaviorStyle.CaptureField;
-                    detectionRange = 20f;
-                    attackRange = 6f;
-                    moveSpeed = 2.2f;
-                    projectileDamage = 12f;
-                    weakPointAlwaysExposed = false;
-                    break;
-                case EnemyKind.Scyphozoa:
-                    maxHealth = 260f;
-                    behaviorStyle = EnemyBehaviorStyle.MemoryDrainer;
-                    detectionRange = 30f;
-                    attackRange = 5f;
-                    moveSpeed = 2.6f;
-                    projectileDamage = 20f;
-                    hoverHeight = 4.2f;
-                    weakPointAlwaysExposed = false;
-                    break;
-                case EnemyKind.Kolossus:
-                    maxHealth = 900f;
-                    behaviorStyle = EnemyBehaviorStyle.RaidBoss;
-                    detectionRange = 42f;
-                    attackRange = 30f;
-                    moveSpeed = 1.1f;
-                    projectileDamage = 60f;
-                    fireCooldown = 3.4f;
-                    weakPointAlwaysExposed = false;
-                    break;
-                case EnemyKind.Specter:
-                case EnemyKind.PolymorphicClone:
-                case EnemyKind.Zombies:
-                    maxHealth = 80f;
-                    behaviorStyle = EnemyBehaviorStyle.RealWorldPossessor;
-                    detectionRange = 24f;
-                    attackRange = 8f;
-                    moveSpeed = 3.6f;
-                    projectileDamage = 10f;
-                    contactDamage = 18f;
-                    break;
-                case EnemyKind.XanaWilliam:
-                    maxHealth = 280f;
-                    behaviorStyle = EnemyBehaviorStyle.Duelist;
-                    detectionRange = 34f;
-                    attackRange = 18f;
-                    moveSpeed = 4.2f;
-                    projectileDamage = 28f;
-                    contactDamage = 45f;
-                    break;
-                case EnemyKind.ExplodingRoachster:
-                    maxHealth = 35f;
-                    behaviorStyle = EnemyBehaviorStyle.Exploder;
-                    detectionRange = 18f;
-                    attackRange = 4f;
-                    moveSpeed = 5.5f;
-                    projectileDamage = 34f;
-                    break;
-                default:
-                    detectionRange = 22f;
-                    attackRange = 15f;
-                    moveSpeed = 3.8f;
-                    projectileDamage = 9f;
-                    fireCooldown = 0.95f;
-                    break;
-            }
-
-            weakPointInstantKill = kind == EnemyKind.Kankrelat || kind == EnemyKind.Hornet || kind == EnemyKind.ExplodingRoachster;
-            knockbackScale = KnockbackScaleFor(kind);
-
-            if (health != null)
-            {
-                health.SetMaxHealth(maxHealth);
-            }
-        }
-
-        private static float KnockbackScaleFor(EnemyKind enemyKind)
-        {
-            switch (enemyKind)
-            {
-                case EnemyKind.Megatank:
-                case EnemyKind.Kolossus:
-                case EnemyKind.Guardian:
-                    return 0f;
-                case EnemyKind.Krab:
-                case EnemyKind.Tarantula:
-                case EnemyKind.Blok:
-                    return 0.5f;
-                default:
-                    return 1f;
-            }
+            runtimeFallback = null;
         }
     }
 }

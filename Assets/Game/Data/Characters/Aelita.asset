@@ -15,7 +15,7 @@ MonoBehaviour:
   character: 3
   displayName: Aelita
   canonNotes: 'Tower key character. Uses creativity, shields and Code: LYOKO interactions.'
-  attackStyle: 0
+  attackStyle: 3
   vehicleStyle: 3
   playable: 1
   companion: 0
@@ -30,6 +30,11 @@ MonoBehaviour:
   basicCooldown: 0.28
   specialCooldown: 1.6
   meleeCombo: {fileID: 0}
+  basicBurst: 1
+  basicHoming: 3
+  basicProjectileSpeed: 0.55
+  specialStagger: 0
+  specialExplosionRadius: 4
   canDoubleJump: 0
   canWallClimb: 0
   canLongJump: 0

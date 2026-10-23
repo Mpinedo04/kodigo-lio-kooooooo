@@ -24,43 +24,50 @@ MonoBehaviour:
     markerId: 
     enemyThreshold: 0
     minSeconds: 3
+    checkpointId: start
   - phase: 1
     objective: Llega al puente de datos y prueba los vehiculos.
     condition: 1
     markerId: bridge
     enemyThreshold: 0
     minSeconds: 0
+    checkpointId: start
   - phase: 2
     objective: Limpia la plataforma de combate.
     condition: 2
     markerId: 
     enemyThreshold: 1
     minSeconds: 0
+    checkpointId: bridge
   - phase: 3
-    objective: Escolta a Aelita hasta la torre activada.
+    objective: 'Escolta a Aelita hasta la torre activada (Z: ordenes a Aelita).'
     condition: 1
     markerId: tower
     enemyThreshold: 0
     minSeconds: 0
+    checkpointId: plateau
   - phase: 4
     objective: Derrota al Megatank y protege a Aelita.
     condition: 2
     markerId: 
     enemyThreshold: 0
     minSeconds: 0
+    checkpointId: tower
   - phase: 5
-    objective: 'Manten Interactuar (E / RT) cerca de la torre para introducir CODE:
-      LYOKO.'
+    objective: 'Con Aelita junto a la torre, manten Interactuar (E / RT): entra y
+      escribe CODE: LYOKO.'
     condition: 3
     markerId: 
     enemyThreshold: 0
     minSeconds: 0
+    checkpointId: tower
   - phase: 6
     objective: Torre desactivada. Retorno al pasado listo.
     condition: 4
     markerId: 
     enemyThreshold: 0
     minSeconds: 0
+    checkpointId: 
   failedObjective: Todos devirtualizados. Pulsa Reintentar (R / Y).
   aelitaLostObjective: 'Aelita ha sido devirtualizada: X.A.N.A. gana. Pulsa Reintentar
     (R / Y).'

@@ -22,16 +22,21 @@ Teclado y raton / mando (Xbox o PlayStation). Tabla completa en `Docs/BIBLIA_DEL
 - Odd: salta contra una pared y mantén adelante para trepar; doble salto en el aire. Yumi: corre y salta para un salto largo.
 - Ataque basico: clic izquierdo / X (Ulrich encadena combos; mantener y soltar = ataque cargado)
 - Ataque especial: clic derecho / Y
+- Habilidad 1: `Q` / LB · Habilidad 2: `F` / RB · Definitiva: `X` / LB + RB (gasta la energia especial)
+- Yumi con telequinesis: `Q` levanta; clic izquierdo lanza; `Q` otra vez suelta
+- Aelita jugable (solo en la CombatArena): mantener `Space` al caer = planear; `Space` en el aire = aleteo
 - Fijar enemigo: `Tab` / R3
-- Montar/desmontar vehiculo: `V` / cruceta arriba (montado: `Space`/`Ctrl` suben y bajan, `Shift` turbo)
-- Cambiar personaje: `1` `2` `3` / cruceta izquierda y derecha
-- Torre (con Aelita cerca): mantener `E` / RT
-- Reintentar cuando todos estan devirtualizados: `R` / Y
+- Montar/desmontar vehiculo: `V` / cruceta arriba
+- Montado: `Space`/`Ctrl` suben y bajan (en la Overbike: salto y derrape), `Shift` turbo, `C` / LT truco, `E` / cruceta abajo sube o baja a Aelita al Overwing
+- Cambiar personaje: `1` `2` `3` (`4` en la CombatArena) / cruceta izquierda y derecha. Los demas siguen luchando con IA
+- Ordenes a Aelita: `Z` / cruceta abajo (pulsar = siguiente orden; mantener = rueda: seguir, esperar, esconderse, ir a la torre)
+- Torre (con Aelita cerca): mantener `E` / RT para que entre, y otra vez para escribir CODE: LYOKO
+- Mision fallida: `R` / Y = Retorno de emergencia al ultimo punto de control
 - Menu de depuracion (solo editor): `F1`
 
 ## Contenido implementado
 
-- Sector Bosque gris/procedural con plataformas, Mar Digital, ruta y torre activada.
+- Sector Bosque con plataformas, arboles gigantes, Mar Digital, ruta y torre activada.
 - Odd, Ulrich y Yumi jugables con prototipos visuales y vehiculos personales.
 - Aelita como companion con IA sencilla que sigue al jugador y ayuda en la torre.
 - Enemigos Kankrelat, Blok, Krab, Hornet y Megatank con IA, laser, vida y punto debil.
@@ -39,6 +44,10 @@ Teclado y raton / mando (Xbox o PlayStation). Tabla completa en `Docs/BIBLIA_DEL
 - Input System con teclado y mando, escena `Boot` con carga de niveles, misiones definidas como datos, eventos, pool de proyectiles, menu de depuracion y tests (F02).
 - Movimiento con aceleracion, salto variable, esquiva, parada en bordes, plataformas moviles y rasgos por personaje; camara Cinemachine con colision, fijado, vehiculo y sacudida; escena de pruebas `Assets/Scenes/Test/MovementGym.unity` (F03).
 - Combate: dano con equipos y capas de fisicas, combos, ataques cargados, desvio, energia especial, hit-stop, empuje, invulnerabilidad tras golpe, ojo de X.A.N.A. con muerte instantanea, numeros de dano, Mar Digital mortal y escena de pruebas `Assets/Scenes/Test/CombatArena.unity` (F04).
+- Habilidades de Odd, Ulrich, Yumi y Aelita (escudo, vision del futuro, supersprint, clones, telequinesis, creatividad, alas y definitivas), companeros con IA y 4 sinergias de equipo (F05).
+- Vehiculos Overboard, Overbike y Overwing con fisica propia, trucos, embestida, vida, pasajera y pista de pruebas `Assets/Scenes/Test/VehicleTrack.unity` (F08).
+- Aelita con ordenes y aviso de peligro, torres con halo de color, interior de la torre con CODE: LYOKO, torres de paso, puntos de control y Retorno de emergencia (F07).
+- Arte de la vertical slice generado por codigo: shader toon con contorno, Mar Digital animado, cielo y postprocesado por sector, guerreros y monstruos low-poly con animacion procedural, vehiculos, torre con halo, arboles y acantilados del Bosque, virtualizacion y devirtualizacion (F09).
 - Documento de pipeline/licencias de modelos fan en `Assets/ArtSources/ASSET_SOURCES.md`.
 - Catalogo de personajes/enemigos/vehiculos en `Assets/ArtSources/CANON_CATALOG.md`.
 - Datos editables generables en `Assets/Game/Data`.

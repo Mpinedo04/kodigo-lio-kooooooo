@@ -14,26 +14,65 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   kind: 3
   displayName: Hornet
-  canonNotes: Flying rapid shooter. Should strafe around the player.
+  canonNotes: Avispa voladora (Frelion). Laser rapido. Ojo en la frente; mejor a
+    distancia. PV 30, dano 10, amenaza 2.
   behaviorStyle: 3
-  maxHealth: 55
-  detectionRange: 30
-  attackRange: 22
-  moveSpeed: 4.8
-  projectileDamage: 12
+  maxHealth: 30
+  detectionRange: 28
+  attackRange: 18
+  moveSpeed: 6
+  projectileDamage: 10
   fireCooldown: 0.72
   specialCooldown: 4
-  hoverHeight: 0
+  hoverHeight: 4.5
   contactDamage: 0
   flying: 1
   boss: 0
   digitalSeaOnly: 0
-  weakPointNotes: Eye of X.A.N.A.
+  weakPointNotes: Ojo de X.A.N.A.
   weakPointDamageMultiplier: 2.5
   weakPointAlwaysExposed: 1
   weakPointInstantKill: 1
   knockbackScale: 1
-  attacks: []
+  visionAngle: 240
+  alertAllyRadius: 16
+  forgetTargetAfter: 4
+  reactionTime: 0.3
+  patrolRadius: 5
+  idleTime: 2
+  preferredDistance: 9
+  turnSpeed: 360
+  bodyRadius: 0.6
+  attackGap: 1
+  staggerMultiplier: 1
+  heavyHitStagger: 0.6
+  guardCrackDuration: 0
+  liftableByTelekinesis: 1
+  partHealth: 25
+  partsToKnockDown: 2
+  knockedDownDuration: 4
+  dataDrop: 1
+  attacks:
+  - attackName: Rafaga
+    type: 1
+    damage: 10
+    cooldown: 3.5
+    range: 18
+    windup: 0.7
+    recovery: 0.6
+    burstCount: 3
+    burstInterval: 0.18
+    activeTime: 0.5
+    knockback: 0
+    heavy: 0
+    areaSize: 8
+    areaWidth: 6
+    areaThickness: 1
+    slowMultiplier: 0.5
+    statusDuration: 2
+    projectileSpeed: 18
+    weight: 1
+    projectilePrefab: {fileID: 0}
   bossPhases: []
   attackSound: {fileID: 0}
   hitSound: {fileID: 0}

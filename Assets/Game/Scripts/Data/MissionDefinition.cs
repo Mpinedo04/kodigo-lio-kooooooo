@@ -16,6 +16,8 @@ namespace CodeLyokoFanGame.Data
         public int enemyThreshold;
         [Tooltip("The step lasts at least this long, so its objective can be read.")]
         public float minSeconds;
+        [Tooltip("Checkpoint id activated when this step starts; Retry brings the team back here.")]
+        public string checkpointId;
     }
 
     // A mission is data: an ordered list of steps that MissionRunner plays in a level.

@@ -10,13 +10,17 @@ namespace CodeLyokoFanGame.EditorTools
         public static void RebuildEverything()
         {
             UrpPipelineSetup.EnsurePipeline();
+            LookBuilder.EnsureShadersIncluded();
             PhysicsLayersSetup.EnsureLayers();
             CoreAssetsBuilder.CreateCoreAssets();
             PrototypeDataAssetBuilder.CreatePrototypeDataAssets();
+            EnemyDataBuilder.CreateEnemyData();
             FullRosterPlaceholderBuilder.CreateFullRosterPlaceholders();
             BootSceneBuilder.BuildBootScene();
             MovementGymBuilder.BuildMovementGym();
             CombatArenaBuilder.BuildCombatArena();
+            VehicleTrackBuilder.BuildVehicleTrack();
+            EnemyGymBuilder.BuildEnemyGym();
             CodeLyokoSceneBuilder.BuildScene();
             Debug.Log("Rebuild Everything finished.");
         }
